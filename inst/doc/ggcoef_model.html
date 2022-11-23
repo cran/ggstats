@@ -30,23 +30,23 @@ document.addEventListener('DOMContentLoaded', function(e) {
 </script>
 
 <style type="text/css">
-  code{white-space: pre-wrap;}
-  span.smallcaps{font-variant: small-caps;}
-  span.underline{text-decoration: underline;}
-  div.column{display: inline-block; vertical-align: top; width: 50%;}
-  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-  ul.task-list{list-style: none;}
-    </style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
 
 
 
 <style type="text/css">
-  code {
-    white-space: pre;
-  }
-  .sourceCode {
-    overflow: visible;
-  }
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
@@ -64,55 +64,54 @@ pre > code.sourceCode { white-space: pre-wrap; }
 pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
-  { counter-reset: source-line 0; }
+{ counter-reset: source-line 0; }
 pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
+{ position: relative; left: -4em; counter-increment: source-line; }
 pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-    color: #aaaaaa;
-  }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
 div.sourceCode
-  {   }
+{ }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
-
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
 </style>
 <script>
 // apply pandoc div.sourceCode style to pre.sourceCode instead
@@ -506,9 +505,8 @@ behavior with <code>colour = NULL</code>.</p>
 <code>stripped_rows = FALSE</code>.</p>
 <div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggcoef_model</span>(mod_simple, <span class="at">stripped_rows =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
 <p><img src="data:image/png;base64,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" /><!-- --></p>
-<p>Do not hesitate to consult the <a href="http://ggobi.github.io/ggally/reference/ggcoef_model.html">help
-file</a> of <code>ggcoef_model()</code> to see all available
-options.</p>
+<p>Do not hesitate to consult the help file of
+<code>ggcoef_model()</code> to see all available options.</p>
 </div>
 <div id="ggplot2-elements" class="section level3">
 <h3>ggplot2 elements</h3>

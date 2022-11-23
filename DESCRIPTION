@@ -1,7 +1,7 @@
 Package: ggstats
 Type: Package
 Title: Extension to 'ggplot2' for Plotting Stats
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: c(
     person("Joseph", "Larmarange", , "joseph@larmarange.net", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-7097-700X"))
@@ -15,16 +15,16 @@ URL: https://larmarange.github.io/ggstats/
 BugReports: https://github.com/larmarange/ggstats/issues
 Imports: broom.helpers, cli, dplyr, forcats, ggplot2, lifecycle,
         magrittr, scales, stats, tidyr
-Suggests: broom, emmeans, knitr, labelled, reshape, rmarkdown, nnet,
-        testthat (>= 3.0.0), spelling, survey, survival, vdiffr
+Suggests: broom, emmeans, glue, knitr, labelled, reshape, rmarkdown,
+        nnet, testthat (>= 3.0.0), spelling, survey, survival, vdiffr
 Encoding: UTF-8
 RoxygenNote: 7.2.1
 Config/testthat/edition: 3
 Language: en-US
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2022-10-14 15:56:18 UTC; josep
+Packaged: 2022-11-19 12:10:28 UTC; josep
 Author: Joseph Larmarange [aut, cre] (<https://orcid.org/0000-0001-7097-700X>)
 Maintainer: Joseph Larmarange <joseph@larmarange.net>
 Repository: CRAN
-Date/Publication: 2022-10-17 06:32:32 UTC
+Date/Publication: 2022-11-24 00:20:08 UTC
