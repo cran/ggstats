@@ -131,8 +131,15 @@ ggcoef_model(mod_simple) +
 ## -----------------------------------------------------------------------------
 library(nnet)
 mod <- multinom(Species ~ ., data = iris)
-ggcoef_multinom(mod, exponentiate = TRUE)
-ggcoef_multinom(mod, type = "faceted")
+ggcoef_multinom(
+  mod,
+  exponentiate = TRUE
+)
+ggcoef_multinom(
+  mod,
+  exponentiate = TRUE,
+  type = "faceted"
+)
 ggcoef_multinom(
   mod,
   type = "faceted",

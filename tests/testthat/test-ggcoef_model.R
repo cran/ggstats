@@ -1,6 +1,7 @@
 test_that("ggcoef_model()", {
   skip_if_not_installed("broom.helpers")
   skip_if_not_installed("reshape")
+  skip_on_cran()
 
   data(tips, package = "reshape")
   mod_simple <- lm(tip ~ day + time + total_bill, data = tips)
@@ -151,6 +152,7 @@ test_that("ggcoef_model()", {
 
 test_that("ggcoef_compare()", {
   skip_if_not_installed("broom.helpers")
+  skip_on_cran()
 
   # Use ggcoef_compare() for comparing several models on the same plot
   mod1 <- lm(Fertility ~ ., data = swiss)
@@ -176,6 +178,7 @@ test_that("ggcoef_compare()", {
 test_that("ggcoef_multinom()", {
   skip_if_not_installed("broom.helpers")
   skip_if_not_installed("nnet")
+  skip_on_cran()
 
   library(nnet)
   mod <- multinom(Species ~ ., data = iris)
@@ -203,6 +206,7 @@ test_that("ggcoef_multinom()", {
 
 test_that("ggcoef_model() works with tieders not returning p-values", {
   skip_if_not_installed("broom.helpers")
+  skip_on_cran()
 
   mod <- lm(Sepal.Width ~ Species, iris)
   my_tidier <- function(x, ...) {
@@ -238,6 +242,7 @@ test_that("ggcoef_compare() complete NA respecting variables order", {
 test_that("ggcoef_compare() does not produce an error with an include", {
   skip_if_not_installed("survival")
   skip_if_not_installed("broom.helpers")
+  skip_on_cran()
   m1 <- survival::coxph(
     survival::Surv(time, status) ~ prior + age,
     data = survival::veteran
@@ -252,4 +257,42 @@ test_that("ggcoef_compare() does not produce an error with an include", {
     "ggcoef_compare() with include",
     ggcoef_compare(models, include = broom.helpers::starts_with("p"))
   )
+})
+
+test_that("ggcoef_model() works with pairwise contratst", {
+  skip_if_not_installed("broom.helpers")
+  mod <- lm(Sepal.Length ~ Sepal.Width + Species, data = iris)
+  expect_error(
+    ggcoef_model(mod, add_pairwise_contrasts = TRUE),
+    NA
+  )
+  expect_error(
+    ggcoef_model(
+      mod,
+      add_pairwise_contrasts = TRUE,
+      pairwise_variables = dplyr::starts_with("Sp"),
+      keep_model_terms = TRUE
+    ),
+    NA
+  )
+  mod2 <- lm(Sepal.Length ~ Species, data = iris)
+  expect_error(
+    ggcoef_compare(list(mod, mod2), add_pairwise_contrasts = TRUE),
+    NA
+  )
+})
+
+test_that("tidy_args is supported", {
+  mod <- lm(Sepal.Length ~ Sepal.Width, data = iris)
+  custom <- function(x, force = 1, ...) {
+    broom::tidy(x, ...) %>%
+      dplyr::mutate(estimate = force)
+  }
+  res <- ggcoef_model(
+    mod,
+    tidy_fun = custom,
+    tidy_args = list(force = 3),
+    return_data = TRUE
+  )
+  expect_equal(res$estimate, 3)
 })
