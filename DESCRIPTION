@@ -1,7 +1,7 @@
 Package: ggstats
 Type: Package
 Title: Extension to 'ggplot2' for Plotting Stats
-Version: 0.2.0
+Version: 0.2.1
 Authors@R: c(
     person("Joseph", "Larmarange", , "joseph@larmarange.net", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-7097-700X"))
@@ -24,8 +24,8 @@ Config/testthat/edition: 3
 Language: en-US
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2023-01-06 12:56:29 UTC; josep
+Packaged: 2023-01-12 08:39:52 UTC; josep
 Author: Joseph Larmarange [aut, cre] (<https://orcid.org/0000-0001-7097-700X>)
 Maintainer: Joseph Larmarange <joseph@larmarange.net>
 Repository: CRAN
-Date/Publication: 2023-01-06 16:40:02 UTC
+Date/Publication: 2023-01-12 09:40:11 UTC

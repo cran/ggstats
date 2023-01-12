@@ -1,3 +1,7 @@
+# ggstats 0.2.1
+
+* Bug fix in `geom_stripped_rows()` and `geom_stripped_cols()` (#20)
+
 # ggstats 0.2.0
 
 * Support for pairwise contrasts (#14)

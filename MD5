@@ -1,7 +1,7 @@
-4eb8ba21472809c34221abb43ecef42e *DESCRIPTION
+d2fcdc2f0bd860287891e57de021a7f4 *DESCRIPTION
 d97ab045af5a24e28604dc56b9680a73 *NAMESPACE
-5e2c3039789d6202b1b6eaf1d98c421e *NEWS.md
-f5125114a5dcaa67402e3910ec25db59 *R/geom_stripped_rows.R
+f128d668ebfe5523f0dbcc4ec4ce6fbf *NEWS.md
+cf34415121e0aa57f259dba4e06866aa *R/geom_stripped_rows.R
 73f8735f6a2ec2b9a0c177289dfc0c26 *R/ggcoef_model.R
 7aef44f5a8ba00bf7d545d11c0fe5950 *R/ggstats-package.R
 3a7be951aff694a367d7a31195c72df5 *R/ggsurvey.R
