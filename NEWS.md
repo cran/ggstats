@@ -1,3 +1,16 @@
+# ggstats 0.3.0
+
+**New features**
+
+* New functions `gglikert()`, `gglikert_stacked()` and `gglikert_data()` (#25)
+* New positions `position_likert()` and `position_likert_count()` (#25)
+* New `complete` argument for `stat_prop()` (#25)
+
+**Bug fixes**
+
+* Bug fix in `ggcoef_compare()` to preserve the order of model terms and to 
+  avoid an error with `add_reference_rows = FALSE` (#23)
+
 # ggstats 0.2.1
 
 * Bug fix in `geom_stripped_rows()` and `geom_stripped_cols()` (#20)

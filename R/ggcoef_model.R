@@ -331,6 +331,10 @@ ggcoef_compare <- function(
   coefficients_label <- attr(data, "coefficients_label")
 
   data$model <- .in_order(data$model)
+  data$term <- .in_order(data$term)
+  data$var_label <- .in_order(data$var_label)
+  data$variable <- .in_order(data$variable)
+  data$label <- .in_order(data$label)
 
   # include should be applied after lapply
   data <- data %>%
@@ -347,10 +351,12 @@ ggcoef_compare <- function(
       .data$model,
       tidyr::nesting(
         !!sym("var_label"), !!sym("variable"), !!sym("var_class"),
-        !!sym("var_type"), !!sym("contrasts"), !!sym("reference_row"),
-        !!sym("label"), !!sym("label_light")
+        !!sym("var_type"), !!sym("contrasts"),
+        !!sym("label"), !!sym("label_light"), !!sym("term")
       )
-    )
+    ) %>%
+    # order lost after nesting
+    dplyr::arrange(.data$model, .data$variable, .data$term)
 
   attr(data, "coefficients_label") <- coefficients_label
 
@@ -526,8 +532,7 @@ ggcoef_data <- function(
   significance = conf.level,
   significance_labels = NULL
 ) {
-  if (!requireNamespace("broom.helpers", quietly = TRUE))
-    cli::cli_abort("Package {.pkg broom.helpers} is required.")
+  rlang::check_installed("broom.helpers")
 
   if (length(significance) == 0)
     significance <- NULL
@@ -583,6 +588,7 @@ ggcoef_data <- function(
   # keep only rows with estimate
   data <- data[!is.na(data$estimate), ]
 
+  data$term <- .in_order(data$term)
   data$var_label <- .in_order(data$var_label)
   data$variable <- .in_order(data$variable)
   data$label <- .in_order(data$label)
@@ -638,6 +644,7 @@ ggcoef_data <- function(
 #' @param facet_labeller labeller function to be used for labeling facets;
 #'   if labels are too long, you can use [ggplot2::label_wrap_gen()] (see
 #'   examples), more information in the documentation of [ggplot2::facet_grid()]
+#' @seealso `vignette("ggcoef_model")`
 #' @export
 ggcoef_plot <- function(
   data,
