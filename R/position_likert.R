@@ -50,7 +50,7 @@
 #'   scale_x_continuous(label = label_number_abs()) +
 #'   scale_fill_brewer(palette = "PiYG")
 #'
-#' @examplesIf interactive()
+#' \donttest{
 #' # Reverse order -------------------------------------------------------------
 #'
 #' ggplot(diamonds) +
@@ -108,6 +108,7 @@
 #'   scale_x_continuous(label = label_percent_abs()) +
 #'   scale_fill_brewer(palette = "PiYG") +
 #'   xlab("proportion")
+#' }
 position_likert <- function(vjust = 1,
                             reverse = FALSE,
                             exclude_fill_values = NULL) {
@@ -130,7 +131,7 @@ position_likert_count <- function(vjust = 1,
     PositionLikertCount,
     vjust = vjust,
     reverse = reverse,
-   exclude_fill_values = exclude_fill_values
+    exclude_fill_values = exclude_fill_values
   )
 }
 
@@ -144,7 +145,6 @@ PositionLikert <- ggplot2::ggproto("PositionLikert", Position,
   fill = TRUE,
   exclude_fill_values = NULL,
   reverse = FALSE,
-
   setup_params = function(self, data) {
     flipped_aes <- ggplot2::has_flipped_aes(data)
     data <- ggplot2::flip_data(data, flipped_aes)
@@ -157,7 +157,6 @@ PositionLikert <- ggplot2::ggproto("PositionLikert", Position,
       flipped_aes = flipped_aes
     )
   },
-
   setup_data = function(self, data, params) {
     data <- ggplot2::flip_data(data, params$flipped_aes)
     if (is.null(params$var)) {
@@ -177,7 +176,6 @@ PositionLikert <- ggplot2::ggproto("PositionLikert", Position,
     )
     ggplot2::flip_data(data, params$flipped_aes)
   },
-
   compute_panel = function(data, params, scales) {
     data <- ggplot2::flip_data(data, params$flipped_aes)
     if (is.null(params$var)) {
@@ -218,11 +216,13 @@ pos_likert <- function(df,
                        fill = FALSE,
                        reverse = FALSE,
                        exclude_fill_values = NULL) {
-  if (reverse)
+  if (reverse) {
     df <- df[nrow(df):1, ] # nolint
+  }
 
-  if (fill)
+  if (fill) {
     df$y <- df$y / sum(abs(df$y), na.rm = TRUE)
+  }
 
   # Values to be excluded after computation of proportions
   if (!is.null(exclude_fill_values) && "fill" %in% names(df)) {

@@ -177,7 +177,8 @@ test_that("ggcoef_compare()", {
   d <- as.data.frame(Titanic)
   m1 <- glm(Survived ~ Sex + Age, family = binomial, data = d, weights = Freq)
   m2 <- glm(
-    Survived ~ Sex + Age + Class, family = binomial,
+    Survived ~ Sex + Age + Class,
+    family = binomial,
     data = d,
     weights = Freq
   )
@@ -203,7 +204,6 @@ test_that("ggcoef_compare()", {
     ggcoef_compare(models, add_reference_rows = FALSE),
     NA
   )
-
 })
 
 test_that("ggcoef_multinom()", {
@@ -212,7 +212,12 @@ test_that("ggcoef_multinom()", {
   skip_on_cran()
 
   library(nnet)
-  mod <- multinom(Species ~ ., data = iris)
+  hec <- as.data.frame(HairEyeColor)
+  mod <- multinom(
+    Hair ~ Eye + Sex,
+    data = hec,
+    weights = hec$Freq
+  )
 
   vdiffr::expect_doppelganger(
     "ggcoef_multinom() dodged",
@@ -225,11 +230,17 @@ test_that("ggcoef_multinom()", {
   )
 
   vdiffr::expect_doppelganger(
+    "ggcoef_multinom() table",
+    ggcoef_multinom(mod, type = "table", exponentiate = TRUE)
+  )
+
+  vdiffr::expect_doppelganger(
     "ggcoef_multinom() faceted custom y level label",
     ggcoef_multinom(
       mod,
       type = "faceted",
-      y.level_label = c("versicolor" = "versicolor\n(ref: setosa)")
+      y.level_label = c("Brown" = "Brown\n(ref: Black)"),
+      exponentiate = TRUE
     )
   )
 })
@@ -326,4 +337,229 @@ test_that("tidy_args is supported", {
     return_data = TRUE
   )
   expect_equal(res$estimate, 3)
+})
+
+
+test_that("ggcoef_table()", {
+  skip_on_cran()
+  skip_if_not_installed("broom.helpers")
+  skip_if_not_installed("reshape")
+
+  data(tips, package = "reshape")
+  mod_simple <- lm(tip ~ day + time + total_bill, data = tips)
+
+  vdiffr::expect_doppelganger(
+    "ggcoef_table() mod simple",
+    ggcoef_table(mod_simple)
+  )
+
+  vdiffr::expect_doppelganger(
+    "ggcoef_table() table_stat",
+    ggcoef_table(mod_simple, table_stat = c("p.value", "ci"))
+  )
+
+  vdiffr::expect_doppelganger(
+    "ggcoef_table() table_header",
+    ggcoef_table(mod_simple, table_header = c("A", "B", "C"))
+  )
+
+  expect_error(
+    ggcoef_table(mod_simple, table_header = c("A", "B", "C", "D"))
+  )
+
+  vdiffr::expect_doppelganger(
+    "ggcoef_table() table_text_size",
+    ggcoef_table(mod_simple, table_text_size = 5)
+  )
+
+  vdiffr::expect_doppelganger(
+    "ggcoef_table() table_stat_label ",
+    ggcoef_table(
+      mod_simple,
+      table_stat_label = list(
+        estimate = scales::label_percent(.1)
+      )
+    )
+  )
+
+  vdiffr::expect_doppelganger(
+    "ggcoef_table() ci_pattern",
+    ggcoef_table(mod_simple, ci_pattern = "{conf.low} to {conf.high}")
+  )
+
+  vdiffr::expect_doppelganger(
+    "ggcoef_table() table_widths",
+    ggcoef_table(mod_simple, table_witdhs = c(1, 2))
+  )
+
+  vdiffr::expect_doppelganger(
+    "ggcoef_table() stripped_rows",
+    ggcoef_table(mod_simple, stripped_rows = FALSE)
+  )
+
+  vdiffr::expect_doppelganger(
+    "ggcoef_table() show_p_values & signif_stars",
+    ggcoef_table(mod_simple, show_p_values = TRUE, signif_stars = TRUE)
+  )
+
+  vdiffr::expect_doppelganger(
+    "ggcoef_table() show_p_values only",
+    ggcoef_table(mod_simple, show_p_values = TRUE, signif_stars = FALSE)
+  )
+
+  vdiffr::expect_doppelganger(
+    "ggcoef_table() signif_stars only",
+    ggcoef_table(mod_simple, show_p_values = FALSE, signif_stars = TRUE)
+  )
+
+  vdiffr::expect_doppelganger(
+    "ggcoef_table() customized statistics",
+    ggcoef_table(
+      mod_simple,
+      table_stat = c("label", "estimate", "std.error", "ci"),
+      ci_pattern = "{conf.low} to {conf.high}",
+      table_stat_label = list(
+        estimate = scales::label_number(accuracy = .01),
+        conf.low = scales::label_number(accuracy = .1),
+        conf.high = scales::label_number(accuracy = .1),
+        std.error = scales::label_number(accuracy = .001),
+        label = toupper
+      ),
+      table_header = c("Term", "Coef.", "SE", "CI"),
+      table_witdhs = c(2, 3)
+    )
+  )
+})
+
+test_that("ggcoef_multicomponents()", {
+  skip_on_cran()
+  skip_if_not_installed("broom.helpers")
+  skip_if_not_installed("pscl")
+
+  library(pscl)
+  data("bioChemists", package = "pscl")
+  mod <- zeroinfl(art ~ fem * mar | fem + mar, data = bioChemists)
+
+  vdiffr::expect_doppelganger(
+    "ggcoef_multicomponents() dodged",
+    ggcoef_multicomponents(mod, tidy_fun = broom.helpers::tidy_zeroinfl)
+  )
+
+  vdiffr::expect_doppelganger(
+    "ggcoef_multicomponents() faceted",
+    ggcoef_multicomponents(
+      mod,
+      tidy_fun = broom.helpers::tidy_zeroinfl,
+      type = "f"
+    )
+  )
+
+  vdiffr::expect_doppelganger(
+    "ggcoef_multicomponents() table",
+    ggcoef_multicomponents(
+      mod,
+      tidy_fun = broom.helpers::tidy_zeroinfl,
+      type = "t"
+    )
+  )
+
+  expect_s3_class(
+    ggcoef_multicomponents(
+      mod,
+      tidy_fun = broom.helpers::tidy_zeroinfl,
+      type = "t",
+      return_data = TRUE
+    ),
+    "tbl"
+  )
+
+  vdiffr::expect_doppelganger(
+    "ggcoef_multicomponents() table component_label",
+    ggcoef_multicomponents(
+      mod,
+      tidy_fun = broom.helpers::tidy_zeroinfl,
+      type = "t",
+      component_label = c(conditional = "Count", zero_inflated = "Zero-inflated") # nolint
+    )
+  )
+
+  vdiffr::expect_doppelganger(
+    "ggcoef_multicomponents() faceted component_label",
+    ggcoef_multicomponents(
+      mod,
+      tidy_fun = broom.helpers::tidy_zeroinfl,
+      type = "f",
+      component_label = c(conditional = "Count", zero_inflated = "Zero-inflated")  # nolint
+    )
+  )
+
+  # message if unfound values for component_label
+  expect_message(
+    ggcoef_multicomponents(
+      mod,
+      tidy_fun = broom.helpers::tidy_zeroinfl,
+      type = "t",
+      component_label = c(c = "Count", zi = "Zero-inflated")
+    )
+  )
+
+  # error if unnamed values for component_label
+  expect_error(
+    ggcoef_multicomponents(
+      mod,
+      tidy_fun = broom.helpers::tidy_zeroinfl,
+      type = "t",
+      component_label = c("Count", zi = "Zero-inflated")
+    )
+  )
+
+  mod2 <- zeroinfl(art ~ fem + mar | 1, data = bioChemists)
+  vdiffr::expect_doppelganger(
+    "ggcoef_multicomponents() mod2 table",
+    ggcoef_multicomponents(
+      mod2,
+      tidy_fun = broom.helpers::tidy_zeroinfl,
+      type = "t"
+    )
+  )
+
+  skip_if_not_installed("betareg")
+  skip_if_not_installed("parameters")
+
+  library(betareg)
+  data("GasolineYield", package = "betareg")
+  m1 <- betareg(yield ~ batch + temp, data = GasolineYield)
+  m2 <- betareg(yield ~ batch + temp | temp + pressure, data = GasolineYield)
+
+  vdiffr::expect_doppelganger(
+    "ggcoef_multicomponents() betareg m1 table",
+    ggcoef_multicomponents(
+      m1,
+      type = "t",
+      tidy_fun = broom.helpers::tidy_parameters,
+      tidy_args = list(component = "all")
+    )
+  )
+
+  vdiffr::expect_doppelganger(
+    "ggcoef_multicomponents() betareg m2 table",
+    ggcoef_multicomponents(
+      m2,
+      type = "t",
+      tidy_fun = broom.helpers::tidy_parameters,
+      tidy_args = list(component = "all")
+    )
+  )
+
+  modlm <- lm(Sepal.Length ~ Sepal.Width + Species, data = iris)
+
+  vdiffr::expect_doppelganger(
+    "ggcoef_multicomponents() linear model table",
+    ggcoef_multicomponents(modlm, type = "t")
+  )
+
+  vdiffr::expect_doppelganger(
+    "ggcoef_multicomponents() linear model faceted",
+    ggcoef_multicomponents(modlm, type = "f")
+  )
 })

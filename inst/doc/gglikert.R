@@ -131,22 +131,60 @@ df_dk %>%
 ## -----------------------------------------------------------------------------
 df_dk %>% gglikert(exclude_fill_values = "Don't know")
 
-## -----------------------------------------------------------------------------
+## ----message=FALSE------------------------------------------------------------
 df_group <- df
 df_group$group1 <- sample(c("A", "B"), 150, replace = TRUE)
 df_group$group2 <- sample(c("a", "b", "c"), 150, replace = TRUE)
 
-gglikert(df_group, q1:q6, facet_cols = vars(group1))
-gglikert(df_group, q1:q2, facet_rows = vars(group1, group2))
-gglikert(df_group, q3:q6, facet_cols = vars(group1), facet_rows = vars(group2))
+gglikert(df_group,
+  q1:q6,
+  facet_cols = vars(group1),
+  labels_size = 3
+)
+gglikert(df_group,
+  q1:q2,
+  facet_rows = vars(group1, group2),
+  labels_size = 3
+)
+gglikert(df_group,
+  q3:q6,
+  facet_cols = vars(group1),
+  facet_rows = vars(group2),
+  labels_size = 3
+) +
+  scale_x_continuous(
+    labels = label_percent_abs(),
+    expand = expansion(0, .2)
+  )
+
+## -----------------------------------------------------------------------------
+gglikert(df_group,
+  q1:q4,
+  y = "group1",
+  facet_rows = vars(.question),
+  labels_size = 3,
+  facet_label_wrap = 15
+)
 
 ## -----------------------------------------------------------------------------
 gglikert_stacked(df)
+
 gglikert_stacked(
   df,
+  sort = "asc",
   add_median_line = TRUE,
   add_labels = FALSE
 )
+
+gglikert_stacked(
+  df_group,
+  include = q1:q4,
+  y = "group2"
+) +
+  facet_grid(
+    rows = vars(.question),
+    labeller = label_wrap_gen(15)
+  )
 
 ## -----------------------------------------------------------------------------
 gglikert_data(df) %>%
@@ -156,4 +194,8 @@ gglikert_data(df) %>%
 ggplot(gglikert_data(df)) +
   aes(y = .question, fill = .answer) +
   geom_bar(position = "fill")
+
+## -----------------------------------------------------------------------------
+df$sampling_weights <- runif(nrow(df))
+gglikert(df, q1:q4, weights = sampling_weights)
 

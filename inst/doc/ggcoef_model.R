@@ -61,14 +61,14 @@ ggcoef_model(mod_simple, facet_row = NULL, colour_guide = TRUE)
 ## -----------------------------------------------------------------------------
 ggcoef_model(mod_titanic, exponentiate = TRUE)
 ggcoef_model(
-    mod_titanic,
-    exponentiate = TRUE,
-    show_p_values = FALSE,
-    signif_stars = FALSE,
-    add_reference_rows = FALSE,
-    categorical_terms_pattern = "{level} (ref: {reference_level})",
-    interaction_sep = " x "
-  ) +
+  mod_titanic,
+  exponentiate = TRUE,
+  show_p_values = FALSE,
+  signif_stars = FALSE,
+  add_reference_rows = FALSE,
+  categorical_terms_pattern = "{level} (ref: {reference_level})",
+  interaction_sep = " x "
+) +
   ggplot2::scale_y_discrete(labels = scales::label_wrap(15))
 
 ## -----------------------------------------------------------------------------
@@ -87,15 +87,18 @@ ggcoef_model(mod_poly)
 
 ## -----------------------------------------------------------------------------
 ggcoef_model(
-  mod_titanic2, exponentiate = TRUE,
+  mod_titanic2,
+  exponentiate = TRUE,
   no_reference_row = "Sex"
 )
 ggcoef_model(
-  mod_titanic2, exponentiate = TRUE,
+  mod_titanic2,
+  exponentiate = TRUE,
   no_reference_row = broom.helpers::all_dichotomous()
 )
 ggcoef_model(
-  mod_titanic2, exponentiate = TRUE,
+  mod_titanic2,
+  exponentiate = TRUE,
   no_reference_row = broom.helpers::all_categorical(),
   categorical_terms_pattern = "{level}/{reference_level}"
 )
@@ -129,8 +132,33 @@ ggcoef_model(mod_simple) +
   ggplot2::theme(legend.position = "right")
 
 ## -----------------------------------------------------------------------------
+ggcoef_table(mod_simple)
+ggcoef_table(mod_titanic, exponentiate = TRUE)
+
+## -----------------------------------------------------------------------------
+ggcoef_table(
+  mod_simple,
+  table_stat = c("label", "estimate", "std.error", "ci"),
+  ci_pattern = "{conf.low} to {conf.high}",
+  table_stat_label = list(
+    estimate = scales::label_number(accuracy = .001),
+    conf.low = scales::label_number(accuracy = .01),
+    conf.high = scales::label_number(accuracy = .01),
+    std.error = scales::label_number(accuracy = .001),
+    label = toupper
+  ),
+  table_header = c("Term", "Coef.", "SE", "CI"),
+  table_witdhs = c(2, 3)
+)
+
+## -----------------------------------------------------------------------------
 library(nnet)
-mod <- multinom(Species ~ ., data = iris)
+hec <- as.data.frame(HairEyeColor)
+mod <- multinom(
+  Hair ~ Eye + Sex,
+  data = hec,
+  weights = hec$Freq
+)
 ggcoef_multinom(
   mod,
   exponentiate = TRUE
@@ -140,10 +168,36 @@ ggcoef_multinom(
   exponentiate = TRUE,
   type = "faceted"
 )
+
+## ---- fig.height=9, fig.width=6-----------------------------------------------
+ggcoef_multinom(
+  mod,
+  exponentiate = TRUE,
+  type = "table"
+)
+
+## -----------------------------------------------------------------------------
 ggcoef_multinom(
   mod,
   type = "faceted",
-  y.level_label = c("versicolor" = "versicolor\n(ref: setosa)")
+  y.level_label = c("Brown" = "Brown\n(ref: Black)"),
+  exponentiate = TRUE
+)
+
+## -----------------------------------------------------------------------------
+library(pscl)
+data("bioChemists", package = "pscl")
+mod <- zeroinfl(art ~ fem * mar | fem + mar, data = bioChemists)
+
+ggcoef_multicomponents(mod)
+ggcoef_multicomponents(mod, type = "f")
+
+## ---- fig.height=7, fig.width=6-----------------------------------------------
+ggcoef_multicomponents(mod, type = "t")
+ggcoef_multicomponents(
+  mod,
+  type = "t",
+  component_label = c(conditional = "Count", zero_inflated = "Zero-inflated")
 )
 
 ## -----------------------------------------------------------------------------

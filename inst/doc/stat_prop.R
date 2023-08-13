@@ -27,7 +27,7 @@ ggplot(d) +
     aes(label = scales::percent(after_stat(prop), accuracy = 1)),
     stat = "prop",
     position = position_stack(.5)
- )
+  )
 
 ## -----------------------------------------------------------------------------
 ggplot(d) +

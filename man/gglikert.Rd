@@ -9,6 +9,8 @@
 gglikert(
   data,
   include = dplyr::everything(),
+  weights = NULL,
+  y = ".question",
   variable_labels = NULL,
   sort = c("none", "ascending", "descending"),
   sort_method = c("prop", "mean", "median"),
@@ -29,12 +31,14 @@ gglikert(
   reverse_likert = FALSE,
   width = 0.9,
   facet_rows = NULL,
-  facet_cols = NULL
+  facet_cols = NULL,
+  facet_label_wrap = 50
 )
 
 gglikert_data(
   data,
   include = dplyr::everything(),
+  weights = NULL,
   variable_labels = NULL,
   sort = c("none", "ascending", "descending"),
   sort_method = c("prop", "mean", "median"),
@@ -45,6 +49,8 @@ gglikert_data(
 gglikert_stacked(
   data,
   include = dplyr::everything(),
+  weights = NULL,
+  y = ".question",
   variable_labels = NULL,
   sort = c("none", "ascending", "descending"),
   sort_method = c("prop", "mean", "median"),
@@ -65,6 +71,13 @@ gglikert_stacked(
 
 \item{include}{variables to include, accept \link[dplyr:select]{tidy-select}
 syntax}
+
+\item{weights}{optional variable name of a weighting variable,
+accept \link[dplyr:select]{tidy-select} syntax}
+
+\item{y}{name of the variable to be plotted on \code{y} axis (relevant when
+\code{.question} is mapped to "facets, see examples),
+accept \link[dplyr:select]{tidy-select} syntax}
 
 \item{variable_labels}{a named list or a named vector of custom variable
 labels}
@@ -123,6 +136,9 @@ see \code{\link[=position_likert]{position_likert()}}}
 \code{\link[ggplot2:vars]{ggplot2::vars()}} and defining faceting groups on the rows or columns
 dimension (see examples)}
 
+\item{facet_label_wrap}{number of characters per line for facet labels, see
+\code{\link[ggplot2:labellers]{ggplot2::label_wrap_gen()}}}
+
 \item{add_median_line}{add a vertical line at 50\%?}
 
 \item{reverse_fill}{if \code{TRUE}, will reverse the default stacking order,
@@ -174,7 +190,7 @@ gglikert(df, include = q1:3)
 
 gglikert(df, sort = "ascending")
 
-\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\donttest{
 gglikert(df, sort = "ascending", sort_prop_include_center = TRUE)
 
 gglikert(df, sort = "ascending", sort_method = "mean")
@@ -219,9 +235,17 @@ df_group$group <- sample(c("A", "B"), 150, replace = TRUE)
 gglikert(df_group, q1:q6, facet_rows = vars(group))
 
 gglikert(df_group, q1:q6, facet_cols = vars(group))
-\dontshow{\}) # examplesIf}
+
+gglikert(df_group, q1:q6, y = "group", facet_rows = vars(.question))
+}
 gglikert_stacked(df, q1:q6)
-gglikert_stacked(df, q1:q6, add_median_line = TRUE)
+
+gglikert_stacked(df, q1:q6, add_median_line = TRUE, sort = "asc")
+
+\donttest{
+gglikert_stacked(df_group, q1:q6, y = "group", add_median_line = TRUE) +
+  facet_grid(rows = vars(.question))
+}
 }
 \seealso{
 \code{vignette("gglikert")}, \code{\link[=position_likert]{position_likert()}}, \code{\link[=stat_prop]{stat_prop()}}

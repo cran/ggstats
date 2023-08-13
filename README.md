@@ -15,15 +15,9 @@ status](https://www.r-pkg.org/badges/version/ggstats)](https://CRAN.R-project.or
 [![DOI](https://zenodo.org/badge/547360047.svg)](https://zenodo.org/badge/latestdoi/547360047)
 <!-- badges: end -->
 
-The `ggstats` package provides suite of functions to plot regression
-model coefficients (“forest plots”) using `ggplot2`..
-
-The suite also includes new statistics to compute proportions, weighted
-mean and cross-tabulation statistics, as well as new geometries to add
-alternative background color to a plot.
-
-The original versions of several functions were originally developed
-within the `{GGally}` package.
+The `ggstats` package provides new statistics, new geometries and new
+positions for `ggplot2` and a suite of functions to facilitate the
+creation of statistical plots.
 
 ## Installation & Documentation
 
@@ -55,14 +49,20 @@ ggcoef_model(mod1)
 
 <img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
 
+``` r
+ggcoef_table(mod1)
+```
+
+<img src="man/figures/README-unnamed-chunk-4-2.png" width="100%" />
+
 ## Comparing several models
 
 ``` r
 mod2 <- step(mod1, trace = 0)
 mod3 <- lm(Fertility ~ Agriculture + Education * Catholic, data = swiss)
 models <- list(
-  "Full model" = mod1, 
-  "Simplified model" = mod2, 
+  "Full model" = mod1,
+  "Simplified model" = mod2,
   "With interaction" = mod3
 )
 
@@ -79,7 +79,7 @@ ggplot(as.data.frame(Titanic)) +
   aes(x = Class, fill = Survived, weight = Freq, by = Class) +
   geom_bar(position = "fill") +
   geom_text(stat = "prop", position = position_fill(.5)) +
-  facet_grid(~ Sex)
+  facet_grid(~Sex)
 ```
 
 <img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
@@ -121,8 +121,8 @@ library(survey, quietly = TRUE)
 #> 
 #>     dotchart
 dw <- svydesign(
-  ids = ~ 1, 
-  weights = ~ Freq, 
+  ids = ~1,
+  weights = ~Freq,
   data = as.data.frame(Titanic)
 )
 ggsurvey(dw) +

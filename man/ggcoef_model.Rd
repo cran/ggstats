@@ -2,8 +2,10 @@
 % Please edit documentation in R/ggcoef_model.R
 \name{ggcoef_model}
 \alias{ggcoef_model}
+\alias{ggcoef_table}
 \alias{ggcoef_compare}
 \alias{ggcoef_multinom}
+\alias{ggcoef_multicomponents}
 \alias{ggcoef_plot}
 \title{Plot model coefficients}
 \usage{
@@ -32,6 +34,40 @@ ggcoef_model(
   show_p_values = TRUE,
   signif_stars = TRUE,
   return_data = FALSE,
+  ...
+)
+
+ggcoef_table(
+  model,
+  tidy_fun = broom.helpers::tidy_with_broom_or_parameters,
+  tidy_args = NULL,
+  conf.int = TRUE,
+  conf.level = 0.95,
+  exponentiate = FALSE,
+  variable_labels = NULL,
+  term_labels = NULL,
+  interaction_sep = " * ",
+  categorical_terms_pattern = "{level}",
+  add_reference_rows = TRUE,
+  no_reference_row = NULL,
+  intercept = FALSE,
+  include = dplyr::everything(),
+  add_pairwise_contrasts = FALSE,
+  pairwise_variables = broom.helpers::all_categorical(),
+  keep_model_terms = FALSE,
+  pairwise_reverse = TRUE,
+  emmeans_args = list(),
+  significance = 1 - conf.level,
+  significance_labels = NULL,
+  show_p_values = FALSE,
+  signif_stars = FALSE,
+  table_stat = c("estimate", "ci", "p.value"),
+  table_header = NULL,
+  table_text_size = 3,
+  table_stat_label = NULL,
+  ci_pattern = "{conf.low}, {conf.high}",
+  table_witdhs = c(3, 2),
+  plot_title = NULL,
   ...
 )
 
@@ -64,7 +100,7 @@ ggcoef_compare(
 
 ggcoef_multinom(
   model,
-  type = c("dodged", "faceted"),
+  type = c("dodged", "faceted", "table"),
   y.level_label = NULL,
   tidy_fun = broom.helpers::tidy_with_broom_or_parameters,
   tidy_args = NULL,
@@ -81,9 +117,43 @@ ggcoef_multinom(
   include = dplyr::everything(),
   significance = 1 - conf.level,
   significance_labels = NULL,
-  show_p_values = TRUE,
-  signif_stars = TRUE,
   return_data = FALSE,
+  table_stat = c("estimate", "ci", "p.value"),
+  table_header = NULL,
+  table_text_size = 3,
+  table_stat_label = NULL,
+  ci_pattern = "{conf.low}, {conf.high}",
+  table_witdhs = c(3, 2),
+  ...
+)
+
+ggcoef_multicomponents(
+  model,
+  type = c("dodged", "faceted", "table"),
+  component_col = "component",
+  component_label = NULL,
+  tidy_fun = broom.helpers::tidy_with_broom_or_parameters,
+  tidy_args = NULL,
+  conf.int = TRUE,
+  conf.level = 0.95,
+  exponentiate = FALSE,
+  variable_labels = NULL,
+  term_labels = NULL,
+  interaction_sep = " * ",
+  categorical_terms_pattern = "{level}",
+  add_reference_rows = TRUE,
+  no_reference_row = NULL,
+  intercept = FALSE,
+  include = dplyr::everything(),
+  significance = 1 - conf.level,
+  significance_labels = NULL,
+  return_data = FALSE,
+  table_stat = c("estimate", "ci", "p.value"),
+  table_header = NULL,
+  table_text_size = 3,
+  table_stat_label = NULL,
+  ci_pattern = "{conf.low}, {conf.high}",
+  table_witdhs = c(3, 2),
   ...
 )
 
@@ -190,12 +260,34 @@ for plotting instead of the plot}
 
 \item{...}{parameters passed to \code{\link[=ggcoef_plot]{ggcoef_plot()}}}
 
+\item{table_stat}{statistics to display in the table, use any column name
+returned by the tidier or \code{"ci"} for confidence intervals formatted
+according to \code{ci_pattern}}
+
+\item{table_header}{optional custom headers for the table}
+
+\item{table_text_size}{text size for the table}
+
+\item{table_stat_label}{optional named list of labeller functions for the
+displayed statistic (see examples)}
+
+\item{ci_pattern}{glue pattern for confidence intervals in the table}
+
+\item{table_witdhs}{relative widths of the forest plot and the coefficients
+table}
+
+\item{plot_title}{an optional plot title}
+
 \item{models}{named list of models}
 
-\item{type}{a dodged plot or a faceted plot?}
+\item{type}{a dodged plot, a faceted plot or multiple table plots?}
 
 \item{y.level_label}{an optional named vector for labeling \code{y.level}
 (see examples)}
+
+\item{component_col}{name of the component column}
+
+\item{component_label}{an optional named vector for labeling components}
 
 \item{data}{a data frame containing data to be plotted,
 typically the output of \code{ggcoef_model()}, \code{ggcoef_compare()}
@@ -264,9 +356,11 @@ examples), more information in the documentation of \code{\link[ggplot2:facet_gr
 A \code{ggplot2} plot or a \code{tibble} if \code{return_data = TRUE}.
 }
 \description{
-\code{ggcoef_model()}, \code{ggcoef_multinom()} and \code{ggcoef_compare()} use
-\code{\link[broom.helpers:tidy_plus_plus]{broom.helpers::tidy_plus_plus()}} to obtain a \code{tibble} of the model
-coefficients, apply additional data transformation and then pass the
+\code{ggcoef_model()}, \code{ggcoef_table()}, \code{ggcoef_multinom()},
+\code{ggcoef_multicomponents()} and \code{ggcoef_compare()}
+use \code{\link[broom.helpers:tidy_plus_plus]{broom.helpers::tidy_plus_plus()}}
+to obtain a \code{tibble} of the model coefficients,
+apply additional data transformation and then pass the
 produced \code{tibble} to \code{ggcoef_plot()} to generate the plot.
 }
 \details{
@@ -276,11 +370,19 @@ then pass your customized \code{tibble} to \code{ggcoef_plot()}.
 }
 \section{Functions}{
 \itemize{
+\item \code{ggcoef_table()}: a variation of \code{\link[=ggcoef_model]{ggcoef_model()}} adding a table
+with estimates, confidence intervals and p-values
+
 \item \code{ggcoef_compare()}: designed for displaying several models on the same
 plot.
 
 \item \code{ggcoef_multinom()}: a variation of \code{\link[=ggcoef_model]{ggcoef_model()}} adapted to
 multinomial logistic regressions performed with \code{\link[nnet:multinom]{nnet::multinom()}}.
+
+\item \code{ggcoef_multicomponents()}: a variation of \code{\link[=ggcoef_model]{ggcoef_model()}} adapted to
+multi-component models such as zero-inflated models or beta regressions.
+\code{\link[=ggcoef_multicomponents]{ggcoef_multicomponents()}} has been tested with \code{pscl::zeroinfl()},
+\code{pscl::hurdle()} and \code{betareg::betareg()}
 
 \item \code{ggcoef_plot()}: plot a tidy \code{tibble} of coefficients
 
@@ -288,6 +390,19 @@ multinomial logistic regressions performed with \code{\link[nnet:multinom]{nnet:
 \examples{
 mod <- lm(Sepal.Length ~ Sepal.Width + Species, data = iris)
 ggcoef_model(mod)
+
+ggcoef_table(mod)
+
+ggcoef_table(mod, table_stat = c("estimate", "ci"))
+
+ggcoef_table(
+  mod,
+  table_stat_label = list(
+    estimate = scales::label_number(.001)
+  )
+)
+
+ggcoef_table(mod, table_text_size = 5, table_witdhs = c(1, 1))
 
 \donttest{
 # a logistic regression example
@@ -302,6 +417,8 @@ mod_titanic <- glm(
 
 # use 'exponentiate = TRUE' to get the Odds Ratio
 ggcoef_model(mod_titanic, exponentiate = TRUE)
+
+ggcoef_table(mod_titanic, exponentiate = TRUE)
 
 # display intercepts
 ggcoef_model(mod_titanic, exponentiate = TRUE, intercept = TRUE)
@@ -326,7 +443,8 @@ ggcoef_model(mod_titanic, exponentiate = TRUE, significance = NULL)
 
 # a black and white version
 ggcoef_model(
-  mod_titanic, exponentiate = TRUE,
+  mod_titanic,
+  exponentiate = TRUE,
   colour = NULL, stripped_rows = FALSE
 )
 
@@ -394,16 +512,15 @@ ggcoef_model(mod_poly)
 # or with different type of contrasts
 # for sum contrasts, the value of the reference term is computed
 if (requireNamespace("emmeans")) {
- mod2 <- lm(
-   tip ~ day + time + sex,
-   data = tips,
-   contrasts = list(time = contr.sum, day = contr.treatment(4, base = 3))
+  mod2 <- lm(
+    tip ~ day + time + sex,
+    data = tips,
+    contrasts = list(time = contr.sum, day = contr.treatment(4, base = 3))
   )
   ggcoef_model(mod2)
 }
 }
 \dontshow{\}) # examplesIf}
-
 \donttest{
 # Use ggcoef_compare() for comparing several models on the same plot
 mod1 <- lm(Fertility ~ ., data = swiss)
@@ -434,6 +551,27 @@ ggcoef_multinom(
   type = "faceted",
   y.level_label = c("versicolor" = "versicolor\n(ref: setosa)")
 )
+}
+\dontshow{\}) # examplesIf}
+\dontshow{if (requireNamespace("pscl")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\donttest{
+library(pscl)
+data("bioChemists", package = "pscl")
+mod <- zeroinfl(art ~ fem * mar | fem + mar, data = bioChemists)
+ggcoef_multicomponents(mod)
+
+ggcoef_multicomponents(mod, type = "f")
+
+ggcoef_multicomponents(mod, type = "t")
+
+ggcoef_multicomponents(
+  mod,
+  type = "t",
+  component_label = c(conditional = "Count", zero_inflated = "Zero-inflated")
+)
+
+mod2 <- zeroinfl(art ~ fem + mar | 1, data = bioChemists)
+ggcoef_multicomponents(mod2, type = "t")
 }
 \dontshow{\}) # examplesIf}
 }

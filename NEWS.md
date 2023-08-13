@@ -1,3 +1,25 @@
+# ggstats 0.4.0
+
+**New features**
+
+* new function `ggcoef_table()` displaying a coefficient table at the right
+  of the forest plot (#32)
+* new function `ggcoef_multicomponents()` for multi-components models such
+  as zero-inflated Poisson or beta regressions (#38)
+* new type `"table"` for `ggcoef_multinom()`
+
+**Improvements**
+
+* `gglikert()` now aligns total proportions when faceting (#28)
+* new `weights` argument for `gglikert()`, `gglikert_stacked()` and 
+  `gglikert_data()` (#29)
+* new `y` argument for `gglikert()` and `gglikert_stacked()` (#31)
+* new `facet_label_wrap` argument for `gglikert()` (#31)
+
+**New helpers**
+
+* `weighted.median()` and `weighted.quantile()` functions
+
 # ggstats 0.3.0
 
 **New features**

@@ -49,6 +49,7 @@
 #'   scale_fill_steps2(breaks = c(-3, -2, 2, 3), show.limits = TRUE) +
 #'   scale_size_area(max_size = 20)
 #'
+#' \donttest{
 #' # custom shape and fill colour based on phi coeffients
 #' ggplot(d) +
 #'   aes(
@@ -80,6 +81,7 @@
 #'   facet_grid(Sex ~ .) +
 #'   labs(fill = "Standardized residuals") +
 #'   theme_minimal()
+#' }
 stat_cross <- function(mapping = NULL, data = NULL,
                        geom = "point", position = "identity",
                        ...,
@@ -197,11 +199,12 @@ StatCross <- ggplot2::ggproto(
 #' tab <- xtabs(Freq ~ Sex + Class, data = as.data.frame(Titanic))
 #' augment_chisq_add_phi(chisq.test(tab))
 augment_chisq_add_phi <- function(x) {
-  if (!inherits(x, "htest") && names(x$statistic) != "X-squared")
+  if (!inherits(x, "htest") && names(x$statistic) != "X-squared") {
     cli::cli_abort(paste(
       "{.arg x} should be the result of a chi-squared test",
-      "(see {.fn stats::chisq.test}).")
-    )
+      "(see {.fn stats::chisq.test})."
+    ))
+  }
 
   broom::augment(x) %>%
     dplyr::group_by(dplyr::across(1)) %>%
