@@ -1,3 +1,17 @@
+# ggstats 0.5.0
+
+**Improvements**
+
+* New options `labels_color` and `totals_color` in `gglikert()` and
+  `gglikert_stacked()` (#43)
+
+**Bug fixes**
+
+* fix in `ggcoef_multicomponents()` when `type = "table"` and
+  `exponentiate = TRUE`
+* fix in `gglikert()`: the function could be called directly with
+  `ggstats::gglikert()` without requiring the full package to be loaded (#47)
+
 # ggstats 0.4.0
 
 **New features**

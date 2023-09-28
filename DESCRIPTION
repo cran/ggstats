@@ -1,13 +1,13 @@
 Package: ggstats
 Type: Package
 Title: Extension to 'ggplot2' for Plotting Stats
-Version: 0.4.0
+Version: 0.5.0
 Authors@R: c(
     person("Joseph", "Larmarange", , "joseph@larmarange.net", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-7097-700X"))
   )
 Description: Provides new statistics, new geometries and new positions for 
-    "ggplot2" and a suite of functions to facilitate the creation of 
+    'ggplot2' and a suite of functions to facilitate the creation of 
     statistical plots.
 License: GPL (>= 3)
 URL: https://larmarange.github.io/ggstats/,
@@ -25,8 +25,8 @@ Config/testthat/edition: 3
 Language: en-US
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2023-08-13 10:37:53 UTC; josep
+Packaged: 2023-09-28 10:55:38 UTC; josep
 Author: Joseph Larmarange [aut, cre] (<https://orcid.org/0000-0001-7097-700X>)
 Maintainer: Joseph Larmarange <joseph@larmarange.net>
 Repository: CRAN
-Date/Publication: 2023-08-13 12:40:11 UTC
+Date/Publication: 2023-09-28 12:40:02 UTC

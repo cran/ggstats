@@ -37,6 +37,8 @@
 #'
 #' ggcoef_table(mod)
 #'
+#'
+#' \donttest{
 #' ggcoef_table(mod, table_stat = c("estimate", "ci"))
 #'
 #' ggcoef_table(
@@ -48,7 +50,6 @@
 #'
 #' ggcoef_table(mod, table_text_size = 5, table_witdhs = c(1, 1))
 #'
-#' \donttest{
 #' # a logistic regression example
 #' d_titanic <- as.data.frame(Titanic)
 #' d_titanic$Survived <- factor(d_titanic$Survived, c("No", "Yes"))
@@ -1060,32 +1061,32 @@ ggcoef_multi_t <- function(
     purrr::map(
       ~ ggcoef_table(
         data = dplyr::filter(data, .data[[component_col]] == .x),
-        plot_title = .x
-      ),
-      model = model,
-      tidy_fun = tidy_fun,
-      tidy_args = tidy_args,
-      conf.int = conf.int,
-      conf.level = conf.level,
-      exponentiate = exponentiate,
-      variable_labels = variable_labels,
-      term_labels = term_labels,
-      interaction_sep = interaction_sep,
-      categorical_terms_pattern = categorical_terms_pattern,
-      add_reference_rows = add_reference_rows,
-      no_reference_row = {{ no_reference_row }},
-      intercept = intercept,
-      include = {{ include }},
-      significance = significance,
-      significance_labels = significance_labels,
-      show_p_values = FALSE,
-      signif_stars = FALSE,
-      table_stat = table_stat,
-      table_header = table_header,
-      table_text_size = table_text_size,
-      table_stat_label = table_stat_label,
-      ci_pattern = ci_pattern,
-      table_witdhs = table_witdhs
+        plot_title = .x,
+        model = model,
+        tidy_fun = tidy_fun,
+        tidy_args = tidy_args,
+        conf.int = conf.int,
+        conf.level = conf.level,
+        exponentiate = exponentiate,
+        variable_labels = variable_labels,
+        term_labels = term_labels,
+        interaction_sep = interaction_sep,
+        categorical_terms_pattern = categorical_terms_pattern,
+        add_reference_rows = add_reference_rows,
+        no_reference_row = {{ no_reference_row }},
+        intercept = intercept,
+        include = {{ include }},
+        significance = significance,
+        significance_labels = significance_labels,
+        show_p_values = FALSE,
+        signif_stars = FALSE,
+        table_stat = table_stat,
+        table_header = table_header,
+        table_text_size = table_text_size,
+        table_stat_label = table_stat_label,
+        ci_pattern = ci_pattern,
+        table_witdhs = table_witdhs
+      )
     )
   patchwork::wrap_plots(res, ncol = 1)
 }

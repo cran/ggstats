@@ -79,7 +79,8 @@ gglikert(
   df,
   labels_size = 3,
   labels_accuracy = .1,
-  labels_hide_below = .2
+  labels_hide_below = .2,
+  labels_color = "white"
 )
 
 ## -----------------------------------------------------------------------------
@@ -91,7 +92,13 @@ gglikert(
 )
 
 ## -----------------------------------------------------------------------------
-gglikert(df, totals_size = 4, totals_fontface = "italic", totals_hjust = .20)
+gglikert(
+  df,
+  totals_size = 4,
+  totals_color = "blue",
+  totals_fontface = "italic",
+  totals_hjust = .20
+)
 
 ## -----------------------------------------------------------------------------
 gglikert(df, add_totals = FALSE)
