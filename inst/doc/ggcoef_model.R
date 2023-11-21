@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -169,7 +169,7 @@ ggcoef_multinom(
   type = "faceted"
 )
 
-## ---- fig.height=9, fig.width=6-----------------------------------------------
+## ----fig.height=9, fig.width=6------------------------------------------------
 ggcoef_multinom(
   mod,
   exponentiate = TRUE,
@@ -192,7 +192,7 @@ mod <- zeroinfl(art ~ fem * mar | fem + mar, data = bioChemists)
 ggcoef_multicomponents(mod)
 ggcoef_multicomponents(mod, type = "f")
 
-## ---- fig.height=7, fig.width=6-----------------------------------------------
+## ----fig.height=7, fig.width=6------------------------------------------------
 ggcoef_multicomponents(mod, type = "t")
 ggcoef_multicomponents(
   mod,
@@ -213,7 +213,7 @@ models <- list(
 ggcoef_compare(models)
 ggcoef_compare(models, type = "faceted")
 
-## ---- echo=FALSE--------------------------------------------------------------
+## ----echo=FALSE---------------------------------------------------------------
 broom.helpers::supported_models %>%
   knitr::kable()
 

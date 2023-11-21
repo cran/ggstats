@@ -1152,7 +1152,7 @@ ggcoef_data <- function(
 
   if (!is.null(significance)) {
     if (is.null(significance_labels)) {
-      significance_labels <- paste(c("p \u2264", "p >"), significance)
+      significance_labels <- paste(c("p <=", "p >"), significance)
     }
     data$significance <- factor(
       !is.na(data$p.value) & data$p.value <= significance,

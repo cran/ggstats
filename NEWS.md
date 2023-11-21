@@ -1,3 +1,10 @@
+# ggstats 0.5.1
+
+**Bug fixes**
+
+* fix in `ggcoef_model()` and other similar functions:
+  Unicode character removed in significance labels (#49)
+
 # ggstats 0.5.0
 
 **Improvements**
