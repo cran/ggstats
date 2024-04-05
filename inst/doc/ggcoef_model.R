@@ -6,6 +6,11 @@ knitr::opts_chunk$set(
 
 ## ----setup--------------------------------------------------------------------
 library(ggstats)
+if (
+  !broom.helpers::.assert_package("emmeans", boolean = TRUE)
+) {
+  knitr::opts_chunk$set(eval = FALSE)
+}
 
 ## ----ggcoef-reg---------------------------------------------------------------
 data(tips, package = "reshape")

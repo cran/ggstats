@@ -13,16 +13,18 @@
 #' `variable_labels` argument.
 #'
 #' @param data a data frame
-#' @param include variables to include, accept [tidy-select][dplyr::select]
+#' @param include variables to include, accepts [tidy-select][dplyr::select]
 #' syntax
 #' @param weights optional variable name of a weighting variable,
-#' accept [tidy-select][dplyr::select] syntax
+#' accepts [tidy-select][dplyr::select] syntax
 #' @param y name of the variable to be plotted on `y` axis (relevant when
 #' `.question` is mapped to "facets, see examples),
-#' accept [tidy-select][dplyr::select] syntax
+#' accepts [tidy-select][dplyr::select] syntax
 #' @param variable_labels a named list or a named vector of custom variable
 #' labels
-#' @param sort should variables be sorted?
+#' @param sort should the factor defined by `factor_to_sort` be sorted according
+#' to the answers (see `sort_method`)? One of "none" (default), "ascending" or
+#' "descending"
 #' @param sort_method method used to sort the variables: `"prop"` sort according
 #' to the proportion of answers higher than the centered level, `"mean"`
 #' considers answer as a score and sort according to the mean score, `"median"`
@@ -30,12 +32,19 @@
 #' @param sort_prop_include_center when sorting with `"prop"` and if the number
 #' of levels is uneven, should half of the central level be taken into account
 #' to compute the proportion?
+#' @param factor_to_sort name of the factor column to sort if `sort` is not
+#' equal to `"none"`; by default the list of questions passed to `include`;
+#' should be one factor column of the tibble returned by `gglikert_data()`;
+#' accepts [tidy-select][dplyr::select] syntax
 #' @param exclude_fill_values Vector of values that should not be displayed
 #' (but still taken into account for computing proportions),
 #' see [position_likert()]
+#' @param data_fun for advanced usage, custom function to be applied to the
+#' generated dataset at the end of `gglikert_data()`
 #' @param add_labels should percentage labels be added to the plot?
 #' @param labels_size size of the percentage labels
-#' @param labels_color color of the percentage labels
+#' @param labels_color color of the percentage labels (`"auto"` to use
+#' `hex_bw()` to determine a font color based on background color)
 #' @param labels_accuracy accuracy of the percentages, see
 #' [scales::label_percent()]
 #' @param labels_hide_below if provided, values below will be masked, see
@@ -140,6 +149,13 @@
 #' gglikert(df_group, q1:q6, facet_cols = vars(group))
 #'
 #' gglikert(df_group, q1:q6, y = "group", facet_rows = vars(.question))
+#'
+#' # Custom function to be applied on data
+#' f <- function(d) {
+#'   d$.question <- forcats::fct_relevel(d$.question, "q5", "q2")
+#'   d
+#' }
+#' gglikert(df, include = q1:q6, data_fun = f)
 #' }
 gglikert <- function(data,
                      include = dplyr::everything(),
@@ -149,10 +165,12 @@ gglikert <- function(data,
                      sort = c("none", "ascending", "descending"),
                      sort_method = c("prop", "mean", "median"),
                      sort_prop_include_center = totals_include_center,
+                     factor_to_sort = ".question",
                      exclude_fill_values = NULL,
+                     data_fun = NULL,
                      add_labels = TRUE,
                      labels_size = 3.5,
-                     labels_color = "black",
+                     labels_color = "auto",
                      labels_accuracy = 1,
                      labels_hide_below = .05,
                      add_totals = TRUE,
@@ -178,7 +196,9 @@ gglikert <- function(data,
       sort = sort,
       sort_method = sort_method,
       sort_prop_include_center = sort_prop_include_center,
-      exclude_fill_values = exclude_fill_values
+      factor_to_sort = {{ factor_to_sort }},
+      exclude_fill_values = exclude_fill_values,
+      data_fun = data_fun
     )
 
   y <- broom.helpers::.select_to_varnames(
@@ -213,7 +233,28 @@ gglikert <- function(data,
       width = width
     )
 
-  if (add_labels) {
+  if (add_labels && labels_color == "auto") {
+    p <- p +
+      geom_text(
+        mapping = aes(
+          label = label_percent_abs(
+            hide_below = labels_hide_below,
+            accuracy = labels_accuracy
+          )(after_stat(prop)),
+          color = after_scale(hex_bw(.data$fill))
+        ),
+        stat = StatProp,
+        complete = "fill",
+        position = position_likert(
+          vjust = .5,
+          reverse = reverse_likert,
+          exclude_fill_values = exclude_fill_values
+        ),
+        size = labels_size
+      )
+  }
+
+  if (add_labels && labels_color != "auto") {
     p <- p +
       geom_text(
         mapping = aes(
@@ -332,7 +373,9 @@ gglikert_data <- function(data,
                           sort = c("none", "ascending", "descending"),
                           sort_method = c("prop", "mean", "median"),
                           sort_prop_include_center = TRUE,
-                          exclude_fill_values = NULL) {
+                          factor_to_sort = ".question",
+                          exclude_fill_values = NULL,
+                          data_fun = NULL) {
   rlang::check_installed("broom.helpers")
   rlang::check_installed("labelled")
 
@@ -389,8 +432,15 @@ gglikert_data <- function(data,
   data$.question <- data_labels[data$.question] %>%
     forcats::fct_inorder()
 
+  factor_to_sort <- broom.helpers::.select_to_varnames(
+    select = {{ factor_to_sort }},
+    data = data,
+    arg_name = "factor_to_sort",
+    select_single = TRUE
+  )
+
   if (sort == "ascending" && sort_method == "prop") {
-    data$.question <- data$.question %>%
+    data[[factor_to_sort]] <- data[[factor_to_sort]] %>%
       forcats::fct_reorder2(
         data$.answer,
         data$.weights,
@@ -402,7 +452,7 @@ gglikert_data <- function(data,
       )
   }
   if (sort == "descending" && sort_method == "prop") {
-    data$.question <- data$.question %>%
+    data[[factor_to_sort]] <- data[[factor_to_sort]] %>%
       forcats::fct_reorder2(
         data$.answer,
         data$.weights,
@@ -414,7 +464,7 @@ gglikert_data <- function(data,
       )
   }
   if (sort == "ascending" && sort_method == "mean") {
-    data$.question <- data$.question %>%
+    data[[factor_to_sort]] <- data[[factor_to_sort]] %>%
       forcats::fct_reorder2(
         data$.answer,
         data$.weights,
@@ -425,7 +475,7 @@ gglikert_data <- function(data,
       )
   }
   if (sort == "descending" && sort_method == "mean") {
-    data$.question <- data$.question %>%
+    data[[factor_to_sort]] <- data[[factor_to_sort]] %>%
       forcats::fct_reorder2(
         data$.answer,
         data$.weights,
@@ -436,7 +486,7 @@ gglikert_data <- function(data,
       )
   }
   if (sort == "ascending" && sort_method == "median") {
-    data$.question <- data$.question %>%
+    data[[factor_to_sort]] <- data[[factor_to_sort]] %>%
       forcats::fct_reorder2(
         data$.answer,
         data$.weights,
@@ -447,7 +497,7 @@ gglikert_data <- function(data,
       )
   }
   if (sort == "descending" && sort_method == "median") {
-    data$.question <- data$.question %>%
+    data[[factor_to_sort]] <- data[[factor_to_sort]] %>%
       forcats::fct_reorder2(
         data$.answer,
         data$.weights,
@@ -456,6 +506,12 @@ gglikert_data <- function(data,
         .na_rm = FALSE,
         .desc = TRUE
       )
+  }
+
+  if (!is.null(data_fun)) {
+    if (!is.function(data_fun))
+      cli::cli_abort("{arg data_fun} should be a function.")
+    data <- data_fun(data)
   }
 
   data
@@ -543,9 +599,11 @@ gglikert_stacked <- function(data,
                              sort = c("none", "ascending", "descending"),
                              sort_method = c("prop", "mean", "median"),
                              sort_prop_include_center = FALSE,
+                             factor_to_sort = ".question",
+                             data_fun = NULL,
                              add_labels = TRUE,
                              labels_size = 3.5,
-                             labels_color = "black",
+                             labels_color = "auto",
                              labels_accuracy = 1,
                              labels_hide_below = .05,
                              add_median_line = FALSE,
@@ -562,7 +620,9 @@ gglikert_stacked <- function(data,
       sort = sort,
       sort_method = sort_method,
       sort_prop_include_center = sort_prop_include_center,
-      exclude_fill_values = NULL
+      factor_to_sort = {{ factor_to_sort }},
+      exclude_fill_values = NULL,
+      data_fun = data_fun
     )
 
   y <- broom.helpers::.select_to_varnames(
@@ -594,7 +654,27 @@ gglikert_stacked <- function(data,
       width = width
     )
 
-  if (add_labels) {
+  if (add_labels && labels_color == "auto") {
+    p <- p +
+      geom_text(
+        mapping = aes(
+          label = label_percent_abs(
+            hide_below = labels_hide_below,
+            accuracy = labels_accuracy
+          )(after_stat(prop)),
+          color = after_scale(hex_bw(.data$fill))
+        ),
+        stat = StatProp,
+        complete = "fill",
+        position = position_fill(
+          vjust = .5,
+          reverse = reverse_fill
+        ),
+        size = labels_size
+      )
+  }
+
+  if (add_labels && labels_color != "auto") {
     p <- p +
       geom_text(
         mapping = aes(

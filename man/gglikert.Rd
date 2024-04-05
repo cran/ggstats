@@ -15,10 +15,12 @@ gglikert(
   sort = c("none", "ascending", "descending"),
   sort_method = c("prop", "mean", "median"),
   sort_prop_include_center = totals_include_center,
+  factor_to_sort = ".question",
   exclude_fill_values = NULL,
+  data_fun = NULL,
   add_labels = TRUE,
   labels_size = 3.5,
-  labels_color = "black",
+  labels_color = "auto",
   labels_accuracy = 1,
   labels_hide_below = 0.05,
   add_totals = TRUE,
@@ -45,7 +47,9 @@ gglikert_data(
   sort = c("none", "ascending", "descending"),
   sort_method = c("prop", "mean", "median"),
   sort_prop_include_center = TRUE,
-  exclude_fill_values = NULL
+  factor_to_sort = ".question",
+  exclude_fill_values = NULL,
+  data_fun = NULL
 )
 
 gglikert_stacked(
@@ -57,9 +61,11 @@ gglikert_stacked(
   sort = c("none", "ascending", "descending"),
   sort_method = c("prop", "mean", "median"),
   sort_prop_include_center = FALSE,
+  factor_to_sort = ".question",
+  data_fun = NULL,
   add_labels = TRUE,
   labels_size = 3.5,
-  labels_color = "black",
+  labels_color = "auto",
   labels_accuracy = 1,
   labels_hide_below = 0.05,
   add_median_line = FALSE,
@@ -72,20 +78,22 @@ gglikert_stacked(
 \arguments{
 \item{data}{a data frame}
 
-\item{include}{variables to include, accept \link[dplyr:select]{tidy-select}
+\item{include}{variables to include, accepts \link[dplyr:select]{tidy-select}
 syntax}
 
 \item{weights}{optional variable name of a weighting variable,
-accept \link[dplyr:select]{tidy-select} syntax}
+accepts \link[dplyr:select]{tidy-select} syntax}
 
 \item{y}{name of the variable to be plotted on \code{y} axis (relevant when
 \code{.question} is mapped to "facets, see examples),
-accept \link[dplyr:select]{tidy-select} syntax}
+accepts \link[dplyr:select]{tidy-select} syntax}
 
 \item{variable_labels}{a named list or a named vector of custom variable
 labels}
 
-\item{sort}{should variables be sorted?}
+\item{sort}{should the factor defined by \code{factor_to_sort} be sorted according
+to the answers (see \code{sort_method})? One of "none" (default), "ascending" or
+"descending"}
 
 \item{sort_method}{method used to sort the variables: \code{"prop"} sort according
 to the proportion of answers higher than the centered level, \code{"mean"}
@@ -96,15 +104,24 @@ used the median and the majority judgment rule for tie-breaking.}
 of levels is uneven, should half of the central level be taken into account
 to compute the proportion?}
 
+\item{factor_to_sort}{name of the factor column to sort if \code{sort} is not
+equal to \code{"none"}; by default the list of questions passed to \code{include};
+should be one factor column of the tibble returned by \code{gglikert_data()};
+accepts \link[dplyr:select]{tidy-select} syntax}
+
 \item{exclude_fill_values}{Vector of values that should not be displayed
 (but still taken into account for computing proportions),
 see \code{\link[=position_likert]{position_likert()}}}
+
+\item{data_fun}{for advanced usage, custom function to be applied to the
+generated dataset at the end of \code{gglikert_data()}}
 
 \item{add_labels}{should percentage labels be added to the plot?}
 
 \item{labels_size}{size of the percentage labels}
 
-\item{labels_color}{color of the percentage labels}
+\item{labels_color}{color of the percentage labels (\code{"auto"} to use
+\code{hex_bw()} to determine a font color based on background color)}
 
 \item{labels_accuracy}{accuracy of the percentages, see
 \code{\link[scales:label_percent]{scales::label_percent()}}}
@@ -244,6 +261,13 @@ gglikert(df_group, q1:q6, facet_rows = vars(group))
 gglikert(df_group, q1:q6, facet_cols = vars(group))
 
 gglikert(df_group, q1:q6, y = "group", facet_rows = vars(.question))
+
+# Custom function to be applied on data
+f <- function(d) {
+  d$.question <- forcats::fct_relevel(d$.question, "q5", "q2")
+  d
+}
+gglikert(df, include = q1:q6, data_fun = f)
 }
 gglikert_stacked(df, q1:q6)
 
