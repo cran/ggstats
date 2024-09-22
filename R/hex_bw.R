@@ -6,6 +6,17 @@
 #' @export
 #' @examples
 #' hex_bw("#0dadfd")
+#'
+#' library(ggplot2)
+#' ggplot(diamonds) +
+#'   aes(x = cut, fill = color, label = after_stat(count)) +
+#'   geom_bar() +
+#'   geom_text(
+#'     mapping = aes(color = after_scale(hex_bw(.data$fill))),
+#'     position = position_stack(.5),
+#'     stat = "count",
+#'     size = 2
+#'   )
 hex_bw <- function(hex_code) {
   rgb_conv <-
     lapply(
@@ -17,10 +28,10 @@ hex_bw <- function(hex_code) {
           ((.x / 255 + 0.055) / 1.055)^2.4
         )
       }
-    ) %>%
-    unlist() %>%
-    matrix(ncol = length(hex_code), byrow = FALSE) %>%
-    sweep(MARGIN = 1, STATS = c(0.2126, 0.7152, 0.0722), FUN = `*`) %>%
+    ) |>
+    unlist() |>
+    matrix(ncol = length(hex_code), byrow = FALSE) |>
+    sweep(MARGIN = 1, STATS = c(0.2126, 0.7152, 0.0722), FUN = `*`) |>
     apply(MARGIN = 2, FUN = sum)
 
   bw <- ifelse(
@@ -31,4 +42,18 @@ hex_bw <- function(hex_code) {
 
   bw[is.na(hex_code)] <- "#ffffff"
   bw
+}
+
+#' @rdname hex_bw
+#' @description
+#' `hex_bw_threshold()` is a variation of `hex_bw()`. For `values` below
+#' `threshold`, black (`"#000000"`) will always be returned, regardless of
+#' `hex_code`.
+#' @export
+#' @param values Values to be compared.
+#' @param threshold Threshold.
+hex_bw_threshold <- function(hex_code, values, threshold) {
+  x <- hex_bw(hex_code)
+  x[values < threshold] <- "#000000"
+  x
 }

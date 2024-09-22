@@ -1,7 +1,5 @@
 #' Plotting Likert-type items
 #'
-#' `r lifecycle::badge("experimental")`
-#'
 #' Combines several factor variables using the same list of ordered levels
 #' (e.g. Likert-type scales) into a unique data frame and generates a centered
 #' bar plot.
@@ -26,7 +24,8 @@
 #' to the answers (see `sort_method`)? One of "none" (default), "ascending" or
 #' "descending"
 #' @param sort_method method used to sort the variables: `"prop"` sort according
-#' to the proportion of answers higher than the centered level, `"mean"`
+#' to the proportion of answers higher than the centered level, `"prop_lower"`
+#' according to the proportion lower than the centered level,  `"mean"`
 #' considers answer as a score and sort according to the mean score, `"median"`
 #' used the median and the majority judgment rule for tie-breaking.
 #' @param sort_prop_include_center when sorting with `"prop"` and if the number
@@ -39,6 +38,13 @@
 #' @param exclude_fill_values Vector of values that should not be displayed
 #' (but still taken into account for computing proportions),
 #' see [position_likert()]
+#' @param cutoff number of categories to be displayed negatively (i.e. on the
+#' left of the x axis or the bottom of the y axis), could be a decimal value:
+#' `2` to display negatively the two first categories, `2.5` to display
+#' negatively the two first categories and half of the third, `2.2` to display
+#' negatively the two first categories and a fifth of the third (see examples).
+#' By default (`NULL`), it will be equal to the number of categories divided
+#' by 2, i.e. it will be centered.
 #' @param data_fun for advanced usage, custom function to be applied to the
 #' generated dataset at the end of `gglikert_data()`
 #' @param add_labels should percentage labels be added to the plot?
@@ -70,6 +76,7 @@
 #' dimension (see examples)
 #' @param facet_label_wrap number of characters per line for facet labels, see
 #' [ggplot2::label_wrap_gen()]
+#' @param symmetric should the x-axis be symmetric?
 #' @return A `ggplot2` plot or a `tibble`.
 #' @seealso `vignette("gglikert")`, [position_likert()], [stat_prop()]
 #' @export
@@ -93,12 +100,13 @@
 #'     q4 = sample(likert_levels, 150, replace = TRUE, prob = 1:5),
 #'     q5 = sample(c(likert_levels, NA), 150, replace = TRUE),
 #'     q6 = sample(likert_levels, 150, replace = TRUE, prob = c(1, 0, 1, 1, 0))
-#'   ) %>%
+#'   ) |>
 #'   mutate(across(everything(), ~ factor(.x, levels = likert_levels)))
 #'
 #' gglikert(df)
 #'
-#' gglikert(df, include = q1:3)
+#' gglikert(df, include = q1:3) +
+#'   scale_fill_likert(pal = scales::brewer_pal(palette = "PRGn"))
 #'
 #' gglikert(df, sort = "ascending")
 #'
@@ -126,11 +134,11 @@
 #' gglikert(df, exclude_fill_values = "Neither agree nor disagree")
 #'
 #' if (require("labelled")) {
-#'   df %>%
+#'   df |>
 #'     set_variable_labels(
 #'       q1 = "First question",
 #'       q2 = "Second question"
-#'     ) %>%
+#'     ) |>
 #'     gglikert(
 #'       variable_labels = c(
 #'         q4 = "a custom label",
@@ -156,6 +164,14 @@
 #'   d
 #' }
 #' gglikert(df, include = q1:q6, data_fun = f)
+#'
+#' # Custom center
+#' gglikert(df, cutoff = 2)
+#'
+#' gglikert(df, cutoff = 1)
+#'
+#' gglikert(df, cutoff = 1, symmetric = TRUE)
+#'
 #' }
 gglikert <- function(data,
                      include = dplyr::everything(),
@@ -163,10 +179,11 @@ gglikert <- function(data,
                      y = ".question",
                      variable_labels = NULL,
                      sort = c("none", "ascending", "descending"),
-                     sort_method = c("prop", "mean", "median"),
+                     sort_method = c("prop", "prop_lower", "mean", "median"),
                      sort_prop_include_center = totals_include_center,
                      factor_to_sort = ".question",
                      exclude_fill_values = NULL,
+                     cutoff = NULL,
                      data_fun = NULL,
                      add_labels = TRUE,
                      labels_size = 3.5,
@@ -186,7 +203,8 @@ gglikert <- function(data,
                      width = .9,
                      facet_rows = NULL,
                      facet_cols = NULL,
-                     facet_label_wrap = 50) {
+                     facet_label_wrap = 50,
+                     symmetric = FALSE) {
   data <-
     gglikert_data(
       data,
@@ -198,22 +216,19 @@ gglikert <- function(data,
       sort_prop_include_center = sort_prop_include_center,
       factor_to_sort = {{ factor_to_sort }},
       exclude_fill_values = exclude_fill_values,
+      cutoff = cutoff,
       data_fun = data_fun
     )
 
-  y <- broom.helpers::.select_to_varnames(
-    select = {{ y }},
-    data = data,
-    arg_name = "y",
-    select_single = TRUE
-  )
+  y <- data |> dplyr::select({{ y }}) |> colnames()
+  if (length(y) != 1) cli::cli_abort("{.arg y} should select only one column.")
 
   if (!is.factor(data[[y]])) {
     data[[y]] <- factor(data[[y]])
   }
 
   if (y_reverse) {
-    data[[y]] <- data[[y]] %>% forcats::fct_rev()
+    data[[y]] <- data[[y]] |> forcats::fct_rev()
   }
 
   p <- ggplot(data) +
@@ -226,7 +241,8 @@ gglikert <- function(data,
     geom_bar(
       position = position_likert(
         reverse = reverse_likert,
-        exclude_fill_values = exclude_fill_values
+        exclude_fill_values = exclude_fill_values,
+        cutoff = cutoff
       ),
       stat = StatProp,
       complete = "fill",
@@ -248,7 +264,8 @@ gglikert <- function(data,
         position = position_likert(
           vjust = .5,
           reverse = reverse_likert,
-          exclude_fill_values = exclude_fill_values
+          exclude_fill_values = exclude_fill_values,
+          cutoff = cutoff
         ),
         size = labels_size
       )
@@ -268,7 +285,8 @@ gglikert <- function(data,
         position = position_likert(
           vjust = .5,
           reverse = reverse_likert,
-          exclude_fill_values = exclude_fill_values
+          exclude_fill_values = exclude_fill_values,
+          cutoff = cutoff
         ),
         size = labels_size,
         color = labels_color
@@ -276,51 +294,63 @@ gglikert <- function(data,
   }
 
   if (add_totals) {
-    dtot <- data %>%
-      dplyr::group_by(.data[[y]], !!!facet_rows, !!!facet_cols) %>%
+    dtot <- data |>
+      dplyr::group_by(.data[[y]], !!!facet_rows, !!!facet_cols) |>
       dplyr::summarise(
         prop_lower = .prop_lower(
           .data$.answer,
           .data$.weights,
           include_center = TRUE,
-          exclude_fill_values = exclude_fill_values
+          exclude_fill_values = exclude_fill_values,
+          cutoff = cutoff
         ),
         prop_higher = .prop_higher(
           .data$.answer,
           .data$.weights,
           include_center = TRUE,
-          exclude_fill_values = exclude_fill_values
+          exclude_fill_values = exclude_fill_values,
+          cutoff = cutoff
         ),
         label_lower = .prop_lower(
           .data$.answer,
           .data$.weights,
           include_center = totals_include_center,
-          exclude_fill_values = exclude_fill_values
+          exclude_fill_values = exclude_fill_values,
+          cutoff = cutoff
         ),
         label_higher = .prop_higher(
           .data$.answer,
           .data$.weights,
           include_center = totals_include_center,
-          exclude_fill_values = exclude_fill_values
+          exclude_fill_values = exclude_fill_values,
+          cutoff = cutoff
         )
-      ) %>%
-      dplyr::ungroup() %>%
+      ) |>
+      dplyr::ungroup() |>
       dplyr::mutate(
         label_lower =
           label_percent_abs(accuracy = totals_accuracy)(.data$label_lower),
         label_higher =
           label_percent_abs(accuracy = totals_accuracy)(.data$label_higher),
-        x_lower = -1 * max(.data$prop_lower) - totals_hjust,
-        x_higher = max(.data$prop_higher) + totals_hjust
-      ) %>%
+        x_lower = dplyr::if_else(
+          symmetric,
+          -1 * max(.data$prop_lower, .data$prop_higher) - totals_hjust,
+          -1 * max(.data$prop_lower) - totals_hjust
+        ),
+        x_higher = dplyr::if_else(
+          symmetric,
+          max(.data$prop_higher, .data$prop_lower) + totals_hjust,
+          max(.data$prop_higher) + totals_hjust
+        )
+      ) |>
       dplyr::group_by(!!!facet_rows, !!!facet_cols)
     dtot <- dplyr::bind_rows(
-      dtot %>%
+      dtot |>
         dplyr::select(
           dplyr::all_of(c(y, x = "x_lower", label = "label_lower")),
           dplyr::group_cols()
         ),
-      dtot %>%
+      dtot |>
         dplyr::select(
           dplyr::all_of(c(y, x = "x_higher", label = "label_higher")),
           dplyr::group_cols()
@@ -344,19 +374,26 @@ gglikert <- function(data,
       )
   }
 
+  if (symmetric) {
+    p <- p +
+      scale_x_continuous(
+        labels = label_percent_abs(),
+        limits = symmetric_limits
+      )
+  } else {
+    p <- p +
+      scale_x_continuous(labels = label_percent_abs())
+  }
+
   p <- p +
     labs(x = NULL, y = NULL, fill = NULL) +
-    scale_x_continuous(labels = label_percent_abs()) +
     scale_y_discrete(labels = scales::label_wrap(y_label_wrap)) +
     theme_light() +
     theme(
       legend.position = "bottom",
       panel.grid.major.y = element_blank()
-    )
-
-  if (length(levels(data$.answer)) <= 11) {
-    p <- p + scale_fill_brewer(palette = "BrBG")
-  }
+    ) +
+    scale_fill_likert(cutoff = cutoff)
 
   p + facet_grid(
     rows = facet_rows, cols = facet_cols,
@@ -371,35 +408,29 @@ gglikert_data <- function(data,
                           weights = NULL,
                           variable_labels = NULL,
                           sort = c("none", "ascending", "descending"),
-                          sort_method = c("prop", "mean", "median"),
+                          sort_method = c(
+                            "prop", "prop_lower", "mean", "median"
+                          ),
                           sort_prop_include_center = TRUE,
                           factor_to_sort = ".question",
                           exclude_fill_values = NULL,
+                          cutoff = NULL,
                           data_fun = NULL) {
-  rlang::check_installed("broom.helpers")
   rlang::check_installed("labelled")
 
   sort <- match.arg(sort)
   sort_method <- match.arg(sort_method)
 
-  variables <- broom.helpers::.select_to_varnames(
-    select = {{ include }},
-    data = data,
-    arg_name = "include"
-  )
+  variables <- data |> dplyr::select({{ include }}) |> colnames()
 
-  weights_var <- broom.helpers::.select_to_varnames(
-    select = {{ weights }},
-    data = data,
-    arg_name = "weights",
-    select_single = TRUE
-  )
-  if (is.null(weights_var)) {
+  weights_var <- data |> dplyr::select({{ weights }}) |> colnames()
+  if (length(weights_var) > 1)
+    cli::cli_abort("{.arg weights} should select only one column.")
+  if (length(weights_var) == 0) {
     data$.weights <- 1
   } else {
     data$.weights <- data[[weights_var]]
   }
-
   if (!is.numeric(data$.weights)) {
     cli::cli_abort("{.arg weights} should correspond to a numerical variable.")
   }
@@ -407,64 +438,89 @@ gglikert_data <- function(data,
   if (is.list(variable_labels)) {
     variable_labels <- unlist(variable_labels)
   }
-  data_labels <- data %>%
+  data_labels <- data |>
     labelled::var_label(unlist = TRUE, null_action = "fill")
   if (!is.null(variable_labels)) {
     data_labels[names(variable_labels)] <- variable_labels
   }
   data_labels <- data_labels[variables]
 
-  data <- data %>%
+  data <- data |>
     dplyr::mutate(
-      dplyr::across(dplyr::all_of(variables), labelled::to_factor)
+      dplyr::across(dplyr::all_of(variables), .fns = labelled::to_factor)
     )
 
-  data <- data %>%
+  data <- data |>
     dplyr::mutate(
       dplyr::bind_cols(forcats::fct_unify(data[, variables]))
-    ) %>%
+    ) |>
     tidyr::pivot_longer(
       cols = dplyr::all_of(variables),
       names_to = ".question",
       values_to = ".answer"
     )
 
-  data$.question <- data_labels[data$.question] %>%
+  data$.question <- data_labels[data$.question] |>
     forcats::fct_inorder()
 
-  factor_to_sort <- broom.helpers::.select_to_varnames(
-    select = {{ factor_to_sort }},
-    data = data,
-    arg_name = "factor_to_sort",
-    select_single = TRUE
-  )
+  factor_to_sort <- data |> dplyr::select({{ factor_to_sort }}) |> colnames()
+  if (length(factor_to_sort) != 1)
+    cli::cli_abort("{.arg factor_to_sort} should select only one column.")
 
   if (sort == "ascending" && sort_method == "prop") {
-    data[[factor_to_sort]] <- data[[factor_to_sort]] %>%
+    data[[factor_to_sort]] <- data[[factor_to_sort]] |>
       forcats::fct_reorder2(
         data$.answer,
         data$.weights,
         .fun = .prop_higher,
         include_center = sort_prop_include_center,
         exclude_fill_values = exclude_fill_values,
+        cutoff = cutoff,
         .na_rm = FALSE,
         .desc = FALSE
       )
   }
   if (sort == "descending" && sort_method == "prop") {
-    data[[factor_to_sort]] <- data[[factor_to_sort]] %>%
+    data[[factor_to_sort]] <- data[[factor_to_sort]] |>
       forcats::fct_reorder2(
         data$.answer,
         data$.weights,
         .fun = .prop_higher,
         include_center = sort_prop_include_center,
         exclude_fill_values = exclude_fill_values,
+        cutoff = cutoff,
+        .na_rm = FALSE,
+        .desc = TRUE
+      )
+  }
+  if (sort == "ascending" && sort_method == "prop_lower") {
+    data[[factor_to_sort]] <- data[[factor_to_sort]] |>
+      forcats::fct_reorder2(
+        data$.answer,
+        data$.weights,
+        .fun = .prop_lower,
+        include_center = sort_prop_include_center,
+        exclude_fill_values = exclude_fill_values,
+        cutoff = cutoff,
+        .na_rm = FALSE,
+        .desc = FALSE
+      )
+  }
+  if (sort == "descending" && sort_method == "prop_lower") {
+    data[[factor_to_sort]] <- data[[factor_to_sort]] |>
+      forcats::fct_reorder2(
+        data$.answer,
+        data$.weights,
+        .fun = .prop_lower,
+        include_center = sort_prop_include_center,
+        exclude_fill_values = exclude_fill_values,
+        cutoff = cutoff,
         .na_rm = FALSE,
         .desc = TRUE
       )
   }
   if (sort == "ascending" && sort_method == "mean") {
-    data[[factor_to_sort]] <- data[[factor_to_sort]] %>%
+    data[[factor_to_sort]] <- data[[factor_to_sort]] |>
       forcats::fct_reorder2(
         data$.answer,
         data$.weights,
@@ -475,7 +531,7 @@ gglikert_data <- function(data,
       )
   }
   if (sort == "descending" && sort_method == "mean") {
-    data[[factor_to_sort]] <- data[[factor_to_sort]] %>%
+    data[[factor_to_sort]] <- data[[factor_to_sort]] |>
       forcats::fct_reorder2(
         data$.answer,
         data$.weights,
@@ -486,7 +542,7 @@ gglikert_data <- function(data,
       )
   }
   if (sort == "ascending" && sort_method == "median") {
-    data[[factor_to_sort]] <- data[[factor_to_sort]] %>%
+    data[[factor_to_sort]] <- data[[factor_to_sort]] |>
       forcats::fct_reorder2(
         data$.answer,
         data$.weights,
@@ -497,7 +553,7 @@ gglikert_data <- function(data,
       )
   }
   if (sort == "descending" && sort_method == "median") {
-    data[[factor_to_sort]] <- data[[factor_to_sort]] %>%
+    data[[factor_to_sort]] <- data[[factor_to_sort]] |>
       forcats::fct_reorder2(
         data$.answer,
         data$.weights,
@@ -520,7 +576,8 @@ gglikert_data <- function(data,
 # Compute the proportion being higher than the center
 # Option to include the centre (if yes, only half taken into account)
 .prop_higher <- function(x, w, include_center = TRUE,
-                         exclude_fill_values = NULL) {
+                         exclude_fill_values = NULL,
+                         cutoff = NULL) {
   N <- sum(as.integer(!is.na(x)) * w)
   if (!is.factor(x)) x <- factor(x)
   if (!is.null(exclude_fill_values)) {
@@ -528,16 +585,21 @@ gglikert_data <- function(data,
     l <- l[!l %in% exclude_fill_values]
     x <- factor(x, levels = l)
   }
-  m <- length(levels(x)) / 2 + 1 / 2
+  if (is.null(cutoff)) cutoff <- length(levels(x)) / 2
   x <- as.numeric(x)
-  ic <- ifelse(include_center, 1 / 2, 0)
-  sum(w * as.integer(x > m), w * ic * as.integer(x == m), na.rm = TRUE) / N
+  m <- ceiling(cutoff)
+  sum(
+    w * as.integer(x >= cutoff + 1),
+    include_center * w * (x == m) * (m - cutoff),
+    na.rm = TRUE
+  ) / N
 }
 
 # Compute the proportion being higher than the center
 # Option to include the centre (if yes, only half taken into account)
 .prop_lower <- function(x, w, include_center = TRUE,
-                        exclude_fill_values = NULL) {
+                        exclude_fill_values = NULL,
+                        cutoff = NULL) {
   N <- sum(as.integer(!is.na(x)) * w)
   if (!is.factor(x)) x <- factor(x)
   if (!is.null(exclude_fill_values)) {
@@ -545,10 +607,14 @@ gglikert_data <- function(data,
     l <- l[!l %in% exclude_fill_values]
     x <- factor(x, levels = l)
   }
-  m <- length(levels(x)) / 2 + 1 / 2
+  if (is.null(cutoff)) cutoff <- length(levels(x)) / 2
   x <- as.numeric(x)
-  ic <- ifelse(include_center, 1 / 2, 0)
-  sum(w * as.integer(x < m), ic * w * as.integer(x == m), na.rm = TRUE) / N
+  m <- ceiling(cutoff)
+  sum(
+    w * as.integer(x <= cutoff),
+    include_center * w * (x == m) * (cutoff %% 1),
+    na.rm = TRUE
+  ) / N
 }
 
 #' @importFrom stats weighted.mean
@@ -597,7 +663,9 @@ gglikert_stacked <- function(data,
                              y = ".question",
                              variable_labels = NULL,
                              sort = c("none", "ascending", "descending"),
-                             sort_method = c("prop", "mean", "median"),
+                             sort_method = c(
+                               "prop", "prop_lower", "mean", "median"
+                             ),
                              sort_prop_include_center = FALSE,
                              factor_to_sort = ".question",
                              data_fun = NULL,
@@ -625,19 +693,15 @@ gglikert_stacked <- function(data,
       data_fun = data_fun
     )
 
-  y <- broom.helpers::.select_to_varnames(
-    select = {{ y }},
-    data = data,
-    arg_name = "y",
-    select_single = TRUE
-  )
+  y <- data |> dplyr::select({{ y }}) |> colnames()
+  if (length(y) != 1) cli::cli_abort("{.arg y} should select only one column.")
 
   if (!is.factor(data[[y]])) {
     data[[y]] <- factor(data[[y]])
   }
 
   if (y_reverse) {
-    data[[y]] <- data[[y]] %>% forcats::fct_rev()
+    data[[y]] <- data[[y]] |> forcats::fct_rev()
   }
 
   p <- ggplot(data) +
@@ -707,11 +771,8 @@ gglikert_stacked <- function(data,
     theme(
       legend.position = "bottom",
       panel.grid.major.y = element_blank()
-    )
-
-  if (length(levels(data$.answer)) <= 11) {
-    p <- p + scale_fill_brewer(palette = "BrBG")
-  }
+    ) +
+    scale_fill_extended()
 
   p
 }

@@ -4,6 +4,8 @@
 \name{stat_prop}
 \alias{stat_prop}
 \alias{StatProp}
+\alias{geom_prop_bar}
+\alias{geom_prop_text}
 \title{Compute proportions according to custom denominator}
 \usage{
 stat_prop(
@@ -17,7 +19,36 @@ stat_prop(
   orientation = NA,
   show.legend = NA,
   inherit.aes = TRUE,
-  complete = NULL
+  complete = NULL,
+  default_by = "total",
+  height = c("count", "prop"),
+  labels = c("prop", "count"),
+  labeller = scales::label_percent(accuracy = 0.1)
+)
+
+geom_prop_bar(
+  mapping = NULL,
+  data = NULL,
+  stat = "prop",
+  position = position_stack(),
+  ...,
+  complete = NULL,
+  default_by = "x",
+  height = "prop"
+)
+
+geom_prop_text(
+  mapping = NULL,
+  data = NULL,
+  stat = "prop",
+  position = position_stack(vjust),
+  ...,
+  complete = NULL,
+  default_by = "x",
+  height = "prop",
+  labels = "prop",
+  labeller = scales::label_percent(accuracy = 0.1),
+  vjust = 0.5
 )
 }
 \arguments{
@@ -43,15 +74,46 @@ from a \code{formula} (e.g. \code{~ head(.x, 10)}).}
 
 \item{geom}{Override the default connection with \code{\link[ggplot2:geom_bar]{ggplot2::geom_bar()}}.}
 
-\item{position}{Position adjustment, either as a string naming the adjustment
-(e.g. \code{"jitter"} to use \code{position_jitter}), or the result of a call to a
-position adjustment function. Use the latter if you need to change the
-settings of the adjustment.}
+\item{position}{A position adjustment to use on the data for this layer. This
+can be used in various ways, including to prevent overplotting and
+improving the display. The \code{position} argument accepts the following:
+\itemize{
+\item The result of calling a position function, such as \code{position_jitter()}.
+This method allows for passing extra arguments to the position.
+\item A string naming the position adjustment. To give the position as a
+string, strip the function name of the \code{position_} prefix. For example,
+to use \code{position_jitter()}, give the position as \code{"jitter"}.
+\item For more information and other ways to specify the position, see the
+\link[ggplot2:layer_positions]{layer position} documentation.
+}}
 
-\item{...}{Other arguments passed on to \code{\link[ggplot2:layer]{layer()}}. These are
-often aesthetics, used to set an aesthetic to a fixed value, like
-\code{colour = "red"} or \code{size = 3}. They may also be parameters
-to the paired geom/stat.}
+\item{...}{Other arguments passed on to \code{\link[ggplot2:layer]{layer()}}'s \code{params} argument. These
+arguments broadly fall into one of 4 categories below. Notably, further
+arguments to the \code{position} argument, or aesthetics that are required
+can \emph{not} be passed through \code{...}. Unknown arguments that are not part
+of the 4 categories below are ignored.
+\itemize{
+\item Static aesthetics that are not mapped to a scale, but are at a fixed
+value and apply to the layer as a whole. For example, \code{colour = "red"}
+or \code{linewidth = 3}. The geom's documentation has an \strong{Aesthetics}
+section that lists the available options. The 'required' aesthetics
+cannot be passed on to the \code{params}. Please note that while passing
+unmapped aesthetics as vectors is technically possible, the order and
+required length is not guaranteed to be parallel to the input data.
+\item When constructing a layer using
+a \verb{stat_*()} function, the \code{...} argument can be used to pass on
+parameters to the \code{geom} part of the layer. An example of this is
+\code{stat_density(geom = "area", outline.type = "both")}. The geom's
+documentation lists which parameters it can accept.
+\item Inversely, when constructing a layer using a
+\verb{geom_*()} function, the \code{...} argument can be used to pass on parameters
+to the \code{stat} part of the layer. An example of this is
+\code{geom_area(stat = "density", adjust = 0.5)}. The stat's documentation
+lists which parameters it can accept.
+\item The \code{key_glyph} argument of \code{\link[ggplot2:layer]{layer()}} may also be passed on through
+\code{...}. This can be one of the functions described as
+\link[ggplot2:draw_key]{key glyphs}, to change the display of the layer in the legend.
+}}
 
 \item{width}{Bar width. By default, set to 90\% of the \code{\link[ggplot2:resolution]{resolution()}} of the
 data.}
@@ -76,7 +138,29 @@ that define both data and aesthetics and shouldn't inherit behaviour from
 the default plot specification, e.g. \code{\link[ggplot2:borders]{borders()}}.}
 
 \item{complete}{Name (character) of an aesthetic for those statistics should
-be completed for unobserved values (see example)}
+be completed for unobserved values (see example).}
+
+\item{default_by}{If the \strong{by} aesthetic is not available, name of another
+aesthetic that will be used to determine the denominators (e.g. \code{"fill"}),
+or \code{NULL} or \code{"total"} to compute proportions of the total. To be noted,
+\code{default_by = "x"} works both for vertical and horizontal bars.}
+
+\item{height}{Which statistic (\code{"count"} or \code{"prop"}) should be used, by
+default, for determining the height/width of the geometry (accessible
+through \code{after_stat(height)})?}
+
+\item{labels}{Which statistic (\code{"prop"} or \code{"count"}) should be used, by
+default, for generating formatted labels (accessible through
+\code{after_stat(labels)})?}
+
+\item{labeller}{Labeller function to format labels and populate
+\code{after_stat(labels)}.}
+
+\item{stat}{The statistical transformation to use on the data for this layer.}
+
+\item{vjust}{Vertical/Horizontal adjustment for the position. Set to 0 to
+align with the bottom/left, 0.5 (the default) for the middle, and 1 for the
+top/right.}
 }
 \value{
 A \code{ggplot2} plot with the added statistic.
@@ -85,8 +169,8 @@ A \code{ggplot2} plot with the added statistic.
 \code{stat_prop()} is a variation of \code{\link[ggplot2:geom_bar]{ggplot2::stat_count()}} allowing to
 compute custom proportions according to the \strong{by} aesthetic defining
 the denominator (i.e. all proportions for a same value of \strong{by} will
-sum to 1). The \strong{by} aesthetic should be a factor. If \strong{by} is not
-specified, proportions of the total will be computed.
+sum to 1). If the \strong{by} aesthetic is not specified, denominators will be
+determined according to the \code{default_by} argument.
 }
 \section{Aesthetics}{
 
@@ -94,8 +178,7 @@ specified, proportions of the total will be computed.
 (required aesthetics are in bold):
 \itemize{
 \item \strong{x \emph{or} y}
-\item by (this aesthetic should be a \strong{factor})
-\item group
+\item by
 \item weight
 }
 }
@@ -103,8 +186,13 @@ specified, proportions of the total will be computed.
 \section{Computed variables}{
 
 \describe{
-\item{count}{number of points in bin}
-\item{prop}{computed proportion}
+\item{\code{after_stat(count)}}{number of points in bin}
+\item{\code{after_stat(denominator)}}{denominator for the proportions}
+\item{\code{after_stat(prop)}}{computed proportion, i.e.
+\code{after_stat(count)}/\code{after_stat(denominator)}}
+\item{\code{after_stat(height)}}{counts or proportions, according to \code{height}}
+\item{\code{after_stat(labels)}}{formatted heights, according to \code{labels} and
+\code{labeller}}
 }
 }
 
@@ -139,10 +227,15 @@ if (requireNamespace("scales")) {
     )
 }
 
+ggplot(d) +
+aes(y = Class, fill = Survived, weight = Freq) +
+  geom_prop_bar() +
+  geom_prop_text()
+
 # displaying unobserved levels with complete
-d <- diamonds \%>\%
-  dplyr::filter(!(cut == "Ideal" & clarity == "I1")) \%>\%
-  dplyr::filter(!(cut == "Very Good" & clarity == "VS2")) \%>\%
+d <- diamonds |>
+  dplyr::filter(!(cut == "Ideal" & clarity == "I1")) |>
+  dplyr::filter(!(cut == "Very Good" & clarity == "VS2")) |>
   dplyr::filter(!(cut == "Premium" & clarity == "IF"))
 p <- ggplot(d) +
   aes(x = clarity, fill = cut, by = clarity) +

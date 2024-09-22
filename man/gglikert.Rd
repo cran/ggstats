@@ -13,10 +13,11 @@ gglikert(
   y = ".question",
   variable_labels = NULL,
   sort = c("none", "ascending", "descending"),
-  sort_method = c("prop", "mean", "median"),
+  sort_method = c("prop", "prop_lower", "mean", "median"),
   sort_prop_include_center = totals_include_center,
   factor_to_sort = ".question",
   exclude_fill_values = NULL,
+  cutoff = NULL,
   data_fun = NULL,
   add_labels = TRUE,
   labels_size = 3.5,
@@ -36,7 +37,8 @@ gglikert(
   width = 0.9,
   facet_rows = NULL,
   facet_cols = NULL,
-  facet_label_wrap = 50
+  facet_label_wrap = 50,
+  symmetric = FALSE
 )
 
 gglikert_data(
@@ -45,10 +47,11 @@ gglikert_data(
   weights = NULL,
   variable_labels = NULL,
   sort = c("none", "ascending", "descending"),
-  sort_method = c("prop", "mean", "median"),
+  sort_method = c("prop", "prop_lower", "mean", "median"),
   sort_prop_include_center = TRUE,
   factor_to_sort = ".question",
   exclude_fill_values = NULL,
+  cutoff = NULL,
   data_fun = NULL
 )
 
@@ -59,7 +62,7 @@ gglikert_stacked(
   y = ".question",
   variable_labels = NULL,
   sort = c("none", "ascending", "descending"),
-  sort_method = c("prop", "mean", "median"),
+  sort_method = c("prop", "prop_lower", "mean", "median"),
   sort_prop_include_center = FALSE,
   factor_to_sort = ".question",
   data_fun = NULL,
@@ -96,7 +99,8 @@ to the answers (see \code{sort_method})? One of "none" (default), "ascending" or
 "descending"}
 
 \item{sort_method}{method used to sort the variables: \code{"prop"} sort according
-to the proportion of answers higher than the centered level, \code{"mean"}
+to the proportion of answers higher than the centered level, \code{"prop_lower"}
+according to the proportion lower than the centered level,  \code{"mean"}
 considers answer as a score and sort according to the mean score, \code{"median"}
 used the median and the majority judgment rule for tie-breaking.}
 
@@ -112,6 +116,14 @@ accepts \link[dplyr:select]{tidy-select} syntax}
 \item{exclude_fill_values}{Vector of values that should not be displayed
 (but still taken into account for computing proportions),
 see \code{\link[=position_likert]{position_likert()}}}
+
+\item{cutoff}{number of categories to be displayed negatively (i.e. on the
+left of the x axis or the bottom of the y axis), could be a decimal value:
+\code{2} to display negatively the two first categories, \code{2.5} to display
+negatively the two first categories and half of the third, \code{2.2} to display
+negatively the two first categories and a fifth of the third (see examples).
+By default (\code{NULL}), it will be equal to the number of categories divided
+by 2, i.e. it will be centered.}
 
 \item{data_fun}{for advanced usage, custom function to be applied to the
 generated dataset at the end of \code{gglikert_data()}}
@@ -163,6 +175,8 @@ dimension (see examples)}
 \item{facet_label_wrap}{number of characters per line for facet labels, see
 \code{\link[ggplot2:labellers]{ggplot2::label_wrap_gen()}}}
 
+\item{symmetric}{should the x-axis be symmetric?}
+
 \item{add_median_line}{add a vertical line at 50\%?}
 
 \item{reverse_fill}{if \code{TRUE}, will reverse the default stacking order,
@@ -172,13 +186,11 @@ see \code{\link[ggplot2:position_stack]{ggplot2::position_fill()}}}
 A \code{ggplot2} plot or a \code{tibble}.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
-}
-\details{
 Combines several factor variables using the same list of ordered levels
 (e.g. Likert-type scales) into a unique data frame and generates a centered
 bar plot.
-
+}
+\details{
 You could use \code{gglikert_data()} to just produce the dataset to be plotted.
 
 If variable labels have been defined (see \code{\link[labelled:var_label]{labelled::var_label()}}), they will
@@ -205,12 +217,13 @@ df <-
     q4 = sample(likert_levels, 150, replace = TRUE, prob = 1:5),
     q5 = sample(c(likert_levels, NA), 150, replace = TRUE),
     q6 = sample(likert_levels, 150, replace = TRUE, prob = c(1, 0, 1, 1, 0))
-  ) \%>\%
+  ) |>
   mutate(across(everything(), ~ factor(.x, levels = likert_levels)))
 
 gglikert(df)
 
-gglikert(df, include = q1:3)
+gglikert(df, include = q1:3) +
+  scale_fill_likert(pal = scales::brewer_pal(palette = "PRGn"))
 
 gglikert(df, sort = "ascending")
 
@@ -238,11 +251,11 @@ gglikert(
 gglikert(df, exclude_fill_values = "Neither agree nor disagree")
 
 if (require("labelled")) {
-  df \%>\%
+  df |>
     set_variable_labels(
       q1 = "First question",
       q2 = "Second question"
-    ) \%>\%
+    ) |>
     gglikert(
       variable_labels = c(
         q4 = "a custom label",
@@ -268,6 +281,14 @@ f <- function(d) {
   d
 }
 gglikert(df, include = q1:q6, data_fun = f)
+
+# Custom center
+gglikert(df, cutoff = 2)
+
+gglikert(df, cutoff = 1)
+
+gglikert(df, cutoff = 1, symmetric = TRUE)
+
 }
 gglikert_stacked(df, q1:q6)
 

@@ -6,6 +6,8 @@ knitr::opts_chunk$set(
 
 ## ----setup--------------------------------------------------------------------
 library(ggstats)
+
+## ----include=FALSE------------------------------------------------------------
 if (
   !broom.helpers::.assert_package("emmeans", boolean = TRUE)
 ) {
@@ -30,7 +32,7 @@ ggcoef_model(mod_titanic, exponentiate = TRUE)
 
 ## -----------------------------------------------------------------------------
 library(labelled)
-tips_labelled <- tips %>%
+tips_labelled <- tips |>
   set_variable_labels(
     day = "Day of the week",
     time = "Lunch or Dinner",
@@ -219,6 +221,6 @@ ggcoef_compare(models)
 ggcoef_compare(models, type = "faceted")
 
 ## ----echo=FALSE---------------------------------------------------------------
-broom.helpers::supported_models %>%
+broom.helpers::supported_models |>
   knitr::kable()
 

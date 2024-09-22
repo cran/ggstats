@@ -3,14 +3,24 @@
 \docType{data}
 \name{position_likert}
 \alias{position_likert}
-\alias{position_likert_count}
+\alias{position_diverging}
 \alias{PositionLikert}
-\alias{PositionLikertCount}
+\alias{PositionDiverging}
 \title{Stack objects on top of each another and center them around 0}
 \usage{
-position_likert(vjust = 1, reverse = FALSE, exclude_fill_values = NULL)
+position_likert(
+  vjust = 1,
+  reverse = FALSE,
+  exclude_fill_values = NULL,
+  cutoff = NULL
+)
 
-position_likert_count(vjust = 1, reverse = FALSE, exclude_fill_values = NULL)
+position_diverging(
+  vjust = 1,
+  reverse = FALSE,
+  exclude_fill_values = NULL,
+  cutoff = NULL
+)
 }
 \arguments{
 \item{vjust}{Vertical adjustment for geoms that have a position
@@ -24,17 +34,23 @@ This is useful if you're rotating both the plot and legend.}
 \item{exclude_fill_values}{Vector of values from the variable associated with
 the \code{fill} aesthetic that should not be displayed (but still taken into
 account for computing proportions)}
+
+\item{cutoff}{number of categories to be displayed negatively (i.e. on the
+left of the x axis or the bottom of the y axis), could be a decimal value:
+\code{2} to display negatively the two first categories, \code{2.5} to display
+negatively the two first categories and half of the third, \code{2.2} to display
+negatively the two first categories and a fifth of the third (see examples).
+By default (\code{NULL}), it will be equal to the number of categories divided
+by 2, i.e. it will be centered.}
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+\code{position_diverging()} stacks bars on top of each other and
+center them around zero (the same number of categories are displayed on
+each side).
+\code{position_likert()} uses proportions instead of counts. This type of
+presentation is commonly used to display Likert-type scales.
 }
 \details{
-\code{position_likert()} stacks proportion bars on top of each other and
-center them around zero (the same number of modalities are displayed on
-each side). This type of presentation is commonly used to display
-Likert-type scales.
-\code{position_likert_count()} uses counts instead of proportions.
-
 It is recommended to use \code{position_likert()} with \code{stat_prop()}
 and its \code{complete} argument (see examples).
 }
@@ -45,26 +61,25 @@ ggplot(diamonds) +
   aes(y = clarity, fill = cut) +
   geom_bar(position = "fill") +
   scale_x_continuous(label = scales::label_percent()) +
-  scale_fill_brewer(palette = "PiYG") +
   xlab("proportion")
 
 ggplot(diamonds) +
   aes(y = clarity, fill = cut) +
   geom_bar(position = "likert") +
   scale_x_continuous(label = label_percent_abs()) +
-  scale_fill_brewer(palette = "PiYG") +
+  scale_fill_likert() +
   xlab("proportion")
 
 ggplot(diamonds) +
   aes(y = clarity, fill = cut) +
   geom_bar(position = "stack") +
-  scale_fill_brewer(palette = "PiYG")
+  scale_fill_likert(pal = scales::brewer_pal(palette = "PiYG"))
 
 ggplot(diamonds) +
   aes(y = clarity, fill = cut) +
-  geom_bar(position = "likert_count") +
+  geom_bar(position = "diverging") +
   scale_x_continuous(label = label_number_abs()) +
-  scale_fill_brewer(palette = "PiYG")
+  scale_fill_likert()
 
 \donttest{
 # Reverse order -------------------------------------------------------------
@@ -73,7 +88,23 @@ ggplot(diamonds) +
   aes(y = clarity, fill = cut) +
   geom_bar(position = position_likert(reverse = TRUE)) +
   scale_x_continuous(label = label_percent_abs()) +
-  scale_fill_brewer(palette = "PiYG", direction = -1) +
+  scale_fill_likert() +
+  xlab("proportion")
+
+# Custom center -------------------------------------------------------------
+
+ggplot(diamonds) +
+  aes(y = clarity, fill = cut) +
+  geom_bar(position = position_likert(cutoff = 1)) +
+  scale_x_continuous(label = label_percent_abs()) +
+  scale_fill_likert(cutoff = 1) +
+  xlab("proportion")
+
+ggplot(diamonds) +
+  aes(y = clarity, fill = cut) +
+  geom_bar(position = position_likert(cutoff = 3.75)) +
+  scale_x_continuous(label = label_percent_abs()) +
+  scale_fill_likert(cutoff = 3.75) +
   xlab("proportion")
 
 # Missing items -------------------------------------------------------------
@@ -86,13 +117,13 @@ d <- d[!(d$cut \%in\% c("Fair", "Good") & d$clarity == "SI2"), ]
 ggplot(d) +
   aes(y = clarity, fill = cut) +
   geom_bar(position = "likert") +
-  scale_fill_brewer(palette = "PiYG")
+  scale_fill_likert()
 
 # use stat_prop() with `complete = "fill"` to fix it
 ggplot(d) +
   aes(y = clarity, fill = cut) +
   geom_bar(position = "likert", stat = "prop", complete = "fill") +
-  scale_fill_brewer(palette = "PiYG")
+  scale_fill_likert()
 
 # Add labels ----------------------------------------------------------------
 
@@ -111,7 +142,7 @@ ggplot(diamonds) +
     position = position_likert(vjust = .5)
   ) +
   scale_x_continuous(label = label_percent_abs()) +
-  scale_fill_brewer(palette = "PiYG", direction = -1) +
+  scale_fill_likert() +
   xlab("proportion")
 
 # Do not display specific fill values ---------------------------------------
@@ -121,7 +152,7 @@ ggplot(diamonds) +
   aes(y = clarity, fill = cut) +
   geom_bar(position = position_likert(exclude_fill_values = "Very Good")) +
   scale_x_continuous(label = label_percent_abs()) +
-  scale_fill_brewer(palette = "PiYG") +
+  scale_fill_likert() +
   xlab("proportion")
 }
 }
