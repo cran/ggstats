@@ -4,8 +4,6 @@
 \name{stat_prop}
 \alias{stat_prop}
 \alias{StatProp}
-\alias{geom_prop_bar}
-\alias{geom_prop_text}
 \title{Compute proportions according to custom denominator}
 \usage{
 stat_prop(
@@ -20,35 +18,7 @@ stat_prop(
   show.legend = NA,
   inherit.aes = TRUE,
   complete = NULL,
-  default_by = "total",
-  height = c("count", "prop"),
-  labels = c("prop", "count"),
-  labeller = scales::label_percent(accuracy = 0.1)
-)
-
-geom_prop_bar(
-  mapping = NULL,
-  data = NULL,
-  stat = "prop",
-  position = position_stack(),
-  ...,
-  complete = NULL,
-  default_by = "x",
-  height = "prop"
-)
-
-geom_prop_text(
-  mapping = NULL,
-  data = NULL,
-  stat = "prop",
-  position = position_stack(vjust),
-  ...,
-  complete = NULL,
-  default_by = "x",
-  height = "prop",
-  labels = "prop",
-  labeller = scales::label_percent(accuracy = 0.1),
-  vjust = 0.5
+  default_by = "total"
 )
 }
 \arguments{
@@ -144,23 +114,6 @@ be completed for unobserved values (see example).}
 aesthetic that will be used to determine the denominators (e.g. \code{"fill"}),
 or \code{NULL} or \code{"total"} to compute proportions of the total. To be noted,
 \code{default_by = "x"} works both for vertical and horizontal bars.}
-
-\item{height}{Which statistic (\code{"count"} or \code{"prop"}) should be used, by
-default, for determining the height/width of the geometry (accessible
-through \code{after_stat(height)})?}
-
-\item{labels}{Which statistic (\code{"prop"} or \code{"count"}) should be used, by
-default, for generating formatted labels (accessible through
-\code{after_stat(labels)})?}
-
-\item{labeller}{Labeller function to format labels and populate
-\code{after_stat(labels)}.}
-
-\item{stat}{The statistical transformation to use on the data for this layer.}
-
-\item{vjust}{Vertical/Horizontal adjustment for the position. Set to 0 to
-align with the bottom/left, 0.5 (the default) for the middle, and 1 for the
-top/right.}
 }
 \value{
 A \code{ggplot2} plot with the added statistic.
@@ -190,9 +143,6 @@ determined according to the \code{default_by} argument.
 \item{\code{after_stat(denominator)}}{denominator for the proportions}
 \item{\code{after_stat(prop)}}{computed proportion, i.e.
 \code{after_stat(count)}/\code{after_stat(denominator)}}
-\item{\code{after_stat(height)}}{counts or proportions, according to \code{height}}
-\item{\code{after_stat(labels)}}{formatted heights, according to \code{labels} and
-\code{labeller}}
 }
 }
 
@@ -226,11 +176,6 @@ if (requireNamespace("scales")) {
       position = position_stack(.5)
     )
 }
-
-ggplot(d) +
-aes(y = Class, fill = Survived, weight = Freq) +
-  geom_prop_bar() +
-  geom_prop_text()
 
 # displaying unobserved levels with complete
 d <- diamonds |>

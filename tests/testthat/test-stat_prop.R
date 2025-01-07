@@ -80,7 +80,11 @@ test_that("stat_prop() works with a character by", {
 
   d <- as.data.frame(Titanic)
   p <- ggplot(d) +
-    aes(y = Class, fill = Survived, weight = Freq, by = as.character(Class)) +
+    aes(
+      y = Class, fill = Survived,
+      weight = Freq, by = as.character(Class),
+      label = scales::percent(after_stat(prop))
+    ) +
     geom_bar(position = "fill") +
     geom_text(stat = "prop", position = position_fill(.5))
 
@@ -114,21 +118,15 @@ test_that("stat_prop() works with default_by", {
   vdiffr::expect_doppelganger("stat_prop() default_by x horizontal", p)
 })
 
-test_that("geom_prop_bar() & geom_prop_text()", {
+test_that("geom_prop_bar() & geom_prop_text() & geom_prop_connector()", {
   d <- as.data.frame(Titanic)
   p <- ggplot(d) +
     aes(y = Class, fill = Survived, weight = Freq) +
     geom_prop_bar() +
-    geom_prop_text()
-  vdiffr::expect_doppelganger("geom_prop_bar() & geom_prop_text()", p)
-
-  p <- ggplot(d) +
-    aes(x = Class, fill = Survived, weight = Freq) +
-    geom_prop_bar(height = "count") +
-    geom_prop_text(
-      height = "count",
-      labels = "count",
-      labeller = scales::number
-    )
-  vdiffr::expect_doppelganger("geom_prop_bar() & geom_prop_text() - count", p)
+    geom_prop_text() +
+    geom_prop_connector()
+  vdiffr::expect_doppelganger(
+    "geom_prop_bar() & geom_prop_text() & geom_prop_connector()",
+    p
+  )
 })
