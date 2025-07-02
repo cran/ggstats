@@ -1,3 +1,16 @@
+# ggstats 0.10.0
+
+**Improvements**
+
+* `gglikert()`: legend order is reversed when `reverse_likert = TRUE` (#95)
+* `gglikert_stacked()`: legend order is reversed when `reverse_fill = TRUE`
+  (#95)
+  
+**Renamed argument**
+
+* the `table_witdhs` argument of `ggcoef_table()` is deprecated. Please use the
+  `table_widths` argument instead (#99)
+
 # ggstats 0.9.0
 
 **Improvements**
