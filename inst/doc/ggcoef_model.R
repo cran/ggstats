@@ -211,6 +211,9 @@ models <- list(
 ggcoef_compare(models)
 ggcoef_compare(models, type = "faceted")
 
+## ----fig.height=10, fig.width=8-----------------------------------------------
+ggcoef_compare(models, type = "table")
+
 ## ----echo=FALSE---------------------------------------------------------------
 broom.helpers::supported_models |>
   knitr::kable()
