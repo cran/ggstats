@@ -20,7 +20,7 @@ test_that("gglikert()", {
       q4 = sample(likert_levels, 150, replace = TRUE, prob = 1:5),
       q5 = sample(c(likert_levels, NA), 150, replace = TRUE),
       q6 = sample(likert_levels, 150, replace = TRUE, prob = c(1, 0, 1, 1, 0))
-    ) %>%
+    ) |>
     dplyr::mutate(dplyr::across(
       dplyr::everything(),
       ~ factor(.x, levels = likert_levels)
@@ -45,13 +45,13 @@ test_that("gglikert()", {
         likert_levels_dk, 150,
         replace = TRUE, prob = c(1, 0, 1, 1, 0, 1)
       )
-    ) %>%
+    ) |>
     dplyr::mutate(dplyr::across(
       dplyr::everything(),
       ~ factor(.x, levels = likert_levels_dk)
     ))
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() mod simple",
     gglikert(df)
   )
@@ -61,82 +61,82 @@ test_that("gglikert()", {
   )
   expect_equal(levels(d$.answer), likert_levels)
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() include and width",
     gglikert(df, include = q1:q3, width = .5)
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() variable_labels",
     gglikert(df, variable_labels = c(q2 = "second question"))
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() sort prop asc",
     gglikert(df, sort = "asc")
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() sort prop desc",
     gglikert(df, sort = "desc")
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() sort prop_lower asc",
     gglikert(df, sort = "asc", sort_method = "prop_lower")
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() sort prop_lower desc",
     gglikert(df, sort = "desc", sort_method = "prop_lower")
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() sort mean asc",
     gglikert(df, sort = "asc", sort_method = "mean")
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() sort mean desc",
     gglikert(df, sort = "desc", sort_method = "mean")
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() sort median asc",
     gglikert(df, sort = "asc", sort_method = "median")
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() sort median desc",
     gglikert(df, sort = "desc", sort_method = "median")
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() sort prop asc include_center",
     gglikert(df, sort = "asc", sort_prop_include_center = TRUE)
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() exclude_fill_values",
     gglikert(df, exclude_fill_values = "Neither agree nor disagree")
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() add_labels",
     gglikert(df, add_labels = FALSE)
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() customize labels",
     gglikert(df, labels_size = 5, labels_hide_below = .3, labels_accuracy = .1)
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() add_totals",
     gglikert(df, add_totals = FALSE)
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() customize totals",
     gglikert(
       df,
@@ -147,24 +147,24 @@ test_that("gglikert()", {
     )
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() colors",
     gglikert(df, labels_color = "red", totals_color = "blue")
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() reverse",
     gglikert(df, y_reverse = TRUE, reverse_likert = TRUE)
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() variable labels and y_label_wrap",
-    df %>%
+    df |>
       labelled::set_variable_labels(
         q1 = "first question",
         q2 = "second question",
         q3 = "third question with a very very very veru very very long label"
-      ) %>%
+      ) |>
       gglikert(
         variable_labels = c(
           q2 = "question 2",
@@ -174,52 +174,52 @@ test_that("gglikert()", {
       )
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() cutoff 0",
     gglikert(df, cutoff = 0)
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() cutoff 1",
     gglikert(df, cutoff = 1)
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() cutoff 1 symmetric",
     gglikert(df, cutoff = 1, symmetric = TRUE)
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() cutoff 1.5",
     gglikert(df, cutoff = 1.5)
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() cutoff 5",
     gglikert(df, cutoff = 5)
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert_stacked()",
     gglikert_stacked(df)
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert_stacked() add_median_line",
     gglikert_stacked(df, add_median_line = TRUE)
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert_stacked() labels_color red",
     gglikert_stacked(df, labels_color = "red")
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert_stacked() labels_color auto",
     gglikert_stacked(df, labels_color = "auto")
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert_stacked() labels_color black",
     gglikert_stacked(df, labels_color = "black")
   )
@@ -228,17 +228,17 @@ test_that("gglikert()", {
   df_group$group1 <- sample(c("A", "B"), 150, replace = TRUE)
   df_group$group2 <- sample(c("a", "b", "c"), 150, replace = TRUE)
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() facet_cols",
     gglikert(df_group, q1:q6, facet_cols = vars(group1))
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() facet_rows",
     gglikert(df_group, q1:q2, facet_rows = vars(group1, group2))
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() facet_rows and facet_cols",
     gglikert(
       df_group, q3:q6,
@@ -246,7 +246,7 @@ test_that("gglikert()", {
     )
   )
 
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() facet_rows with group on y",
     gglikert(df_group, q1:q6, y = "group1", facet_rows = vars(.question))
   )
@@ -255,11 +255,34 @@ test_that("gglikert()", {
     d$.question <- forcats::fct_relevel(d$.question, "q5", "q2")
     d
   }
-  vdiffr::expect_doppelganger(
+  expect_doppelganger(
     "gglikert() with data_fun",
     gglikert(df_group, q1:q6, data_fun = f)
   )
   expect_error(gglikert(df_group, data_fun = "text"))
+
+  # testing compatibility with survey object
+  skip_if_not_installed("survey")
+  set.seed(42)
+  df$w <- .5 + stats::runif(n = nrow(df))
+  ds <- survey::svydesign(ids = ~ 1, weights = ~ w, data = df)
+  expect_no_error(
+    df |> gglikert_data(include = q1:q4, weights = w)
+  )
+  expect_no_error(
+    ds |> gglikert_data(include = q1:q4)
+  )
+  expect_error(
+    ds |> gglikert_data(include = q1:q4, weights = w)
+  )
+  expect_doppelganger(
+    "gglikert() survey",
+    gglikert(ds, q1:q4)
+  )
+  expect_doppelganger(
+    "gglikert_stacked() survey",
+    gglikert_stacked(ds, q1:q4)
+  )
 })
 
 test_that("hex_bw()", {

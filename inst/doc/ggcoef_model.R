@@ -155,7 +155,7 @@ ggcoef_table(
     label = toupper
   ),
   table_header = c("Term", "Coef.", "SE", "CI"),
-  table_witdhs = c(2, 3)
+  table_widths = c(2, 3)
 )
 
 ## -----------------------------------------------------------------------------
