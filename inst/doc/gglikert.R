@@ -97,7 +97,8 @@ gglikert(
   totals_size = 4,
   totals_color = "blue",
   totals_fontface = "italic",
-  totals_hjust = .20
+  totals_hjust = .20,
+  add_totals = "right"
 )
 
 ## -----------------------------------------------------------------------------
@@ -151,6 +152,17 @@ df_dk |>
 
 ## -----------------------------------------------------------------------------
 df_dk |> gglikert(exclude_fill_values = "Don't know")
+
+## ----fig.height=5, fig.width=8------------------------------------------------
+
+df_dk |> gglikert_side(side_values = "Don't know")
+
+## ----fig.height=6, fig.width=10-----------------------------------------------
+
+df_dk |>
+  gglikert_side(
+    side_values = c("Neither agree nor disagree", "Don't know")
+  )
 
 ## ----message=FALSE------------------------------------------------------------
 df_group <- df
